@@ -19,7 +19,7 @@
 
 package com.olleb.nes.CPU6502.cpu;
 
-public class Registers {
+public final class Registers {
 
 	/**
 	 * registers 

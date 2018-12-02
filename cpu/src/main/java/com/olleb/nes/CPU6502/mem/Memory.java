@@ -21,7 +21,7 @@ package com.olleb.nes.CPU6502.mem;
 
 public interface Memory {
 
-	public void read(int address);
+	public int read(int address);
 
 	public void write(int address, int value);
 

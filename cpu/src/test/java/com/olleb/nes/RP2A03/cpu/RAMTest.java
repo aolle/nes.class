@@ -21,6 +21,8 @@ package com.olleb.nes.RP2A03.cpu;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -29,10 +31,39 @@ import com.olleb.nes.CPU6502.mem.RAM;
 @DisplayName("RAM tests")
 class RAMTest {
 
+	private RAM ram;
+
+	@BeforeAll
+	public void init() {
+		ram = new RAM();
+	}
+
+	@BeforeEach
+	public void reset() {
+		ram.clear();
+	}
+
 	@Test
 	@DisplayName("Test RAM size")
 	void testSize() {
-		assertEquals(2048, new RAM().getSize());
+		assertEquals(2048, ram.getSize());
+	}
+
+	@Test
+	@DisplayName("Test RAM writes and reads")
+	void testReadWrite() {
+		// TODO
+		final int end = 0x01FF;
+		final int start = 0x000;
+		final int[] mirrors = { 0x0800, 0x1000, 0x1800 };
+		final int[] values = new int[0x01FF];
+		for (int i = start; i <= end; i++) {
+			values[i] = i;
+			ram.write(i, i);
+		}
+		int[] test = new int[0x01FF];
+		
+
 	}
 
 }

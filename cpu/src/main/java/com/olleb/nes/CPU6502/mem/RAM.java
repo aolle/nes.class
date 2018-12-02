@@ -19,26 +19,52 @@
 
 package com.olleb.nes.CPU6502.mem;
 
-public class RAM implements Memory {
+import java.util.Arrays;
+
+public final class RAM implements Memory {
 
 	// Zero page: 0x0000 - 0x00FF
 	// Stack: 0x0100 - 0x01FF
 	// RAM: 0x0200 - 0x0800
 	// Mirrors 0x000:0x07FF => 0x0800 - 0x1FFF
-	private final int mem[] = new int[0x0800];
+	private final int mem[] = new int[Address.RAM_END.value + 1];
 
-	@Override
-	public void read(int address) {
+	private enum Address {
+		RAM_TOTAL_BEGIN(0x000),
+		RAM_END(0x07FF),
+		RAM_MIRROR_BEGIN(0x0800),
+		RAM_MIRROR_END(0x1FFF),
+		RAM_TOTAL_END(0x1FFF);
 		
+		private final int value;
+
+		private Address(final int address) {
+			this.value = address;
+		}
 	}
 
 	@Override
-	public void write(int address, int value) {
-		
+	public int read(final int address) {
+		if (address <= Address.RAM_MIRROR_END.value) {
+			return mem[address & Address.RAM_END.value];
+		}
+		return -1;
+	}
+
+	@Override
+	public void write(final int address, final int value) {
+		// write mirrors optimized. Write only once.
+		if (address <= Address.RAM_MIRROR_END.value) {
+			mem[address & Address.RAM_END.value] = value;
+		}
 	}
 
 	public int getSize() {
 		return mem.length;
+	}
+	
+	public void clear() {
+		Arrays.fill(mem, 0x0);
 	}
 
 }
