@@ -32,7 +32,7 @@ class RAMTest {
 	@Test
 	@DisplayName("Test RAM size")
 	void testSize() {
-//		assertTrue(new RAM().);
+		assertEquals(2048, new RAM().getSize());
 	}
 
 }

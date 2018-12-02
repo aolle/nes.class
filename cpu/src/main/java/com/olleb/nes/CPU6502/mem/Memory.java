@@ -19,10 +19,10 @@
 
 package com.olleb.nes.CPU6502.mem;
 
-public interface Memory<T1, T2> {
+public interface Memory {
 
-	public void read(T1 t);
+	public void read(int address);
 
-	public void write(T1 t, T2 t2);
+	public void write(int address, int value);
 
 }

@@ -20,8 +20,8 @@
 package com.olleb.nes.CPU6502.cpu;
 
 @FunctionalInterface
-interface InstructionStrategy<T, R> {
+interface InstructionStrategy<T> {
 
-	R exec(T t);
+	int exec(T t);
 
 }

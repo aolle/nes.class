@@ -20,30 +20,30 @@
 package com.olleb.nes.CPU6502.cpu;
 
 @SuppressWarnings("unused")
-public enum Instruction implements InstructionStrategy<Registers, Integer> {
+public enum Instruction implements InstructionStrategy<Registers> {
 
 	// $ -> hex, ! -> dec, % -> binary
 	// # -> imm lower byte, / -> imm upper byte
 	// %1 1st byte, %2 2nd byte, %3 offset
 
 	A9("LDA #$%1", 2, (var r) -> {
-
+		// TODO
 		return 1;
 	});
 
 	private final String opCode;
 	private final int size;
-	private final InstructionStrategy<Registers, Integer> instructionStrategy;
+	private final InstructionStrategy<Registers> instructionStrategy;
 
 	Instruction(final String opCode, final int size,
-			final InstructionStrategy<Registers, Integer> instructionStrategy) {
+			final InstructionStrategy<Registers> instructionStrategy) {
 		this.opCode = opCode;
 		this.size = size;
 		this.instructionStrategy = instructionStrategy;
 	}
 
 	@Override
-	public Integer exec(final Registers r) {
+	public int exec(final Registers r) {
 		return instructionStrategy.exec(r);
 	}
 

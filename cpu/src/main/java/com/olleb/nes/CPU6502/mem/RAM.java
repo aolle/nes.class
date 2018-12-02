@@ -19,21 +19,26 @@
 
 package com.olleb.nes.CPU6502.mem;
 
-public class RAM implements Memory<Integer, Integer>{
+public class RAM implements Memory {
 
-	private final int mem [] = new int [0x800];
-	
+	// Zero page: 0x0000 - 0x00FF
+	// Stack: 0x0100 - 0x01FF
+	// RAM: 0x0200 - 0x0800
+	// Mirrors 0x000:0x07FF => 0x0800 - 0x1FFF
+	private final int mem[] = new int[0x0800];
+
 	@Override
-	public void read(Integer t) {
-		// TODO Auto-generated method stub
+	public void read(int address) {
 		
 	}
 
 	@Override
-	public void write(Integer t, Integer t2) {
-		// TODO Auto-generated method stub
+	public void write(int address, int value) {
 		
 	}
 
-	
+	public int getSize() {
+		return mem.length;
+	}
+
 }
