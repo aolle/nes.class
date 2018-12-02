@@ -19,16 +19,24 @@
 
 package com.olleb.nes.RP2A03.cpu;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.olleb.nes.CPU6502.mem.RAM;
 
 @DisplayName("RAM tests")
+@TestInstance(Lifecycle.PER_CLASS)
 class RAMTest {
 
 	private RAM ram;
@@ -52,18 +60,38 @@ class RAMTest {
 	@Test
 	@DisplayName("Test RAM writes and reads")
 	void testReadWrite() {
-		// TODO
-		final int end = 0x01FF;
-		final int start = 0x000;
-		final int[] mirrors = { 0x0800, 0x1000, 0x1800 };
-		final int[] values = new int[0x01FF];
-		for (int i = start; i <= end; i++) {
-			values[i] = i;
-			ram.write(i, i);
-		}
-		int[] test = new int[0x01FF];
-		
+		final int[] addr = { 0x0000, 0x0800, 0x1000, 0x1800, 0x1FFF };
 
+		// fill ram[0x0000] = 0x0000 to ram[0x01FF] = 0x01FF
+		final List<Integer> values = generateValuesList(addr[0], addr[1]);
+		values.forEach((i) -> ram.write(i, i));
+
+		// check RAM values
+		List<Integer> check = getReadedValuesList(values);
+		assertTrue(check.equals(values));
+
+		// check mirror 1
+		List<Integer> mirror = generateValuesList(addr[1], addr[2]);
+		check = getReadedValuesList(mirror);
+		assertTrue(check.equals(values));
+
+		// check mirror 2
+		mirror = generateValuesList(addr[2], addr[3]);
+		check = getReadedValuesList(mirror);
+		assertTrue(check.equals(values));
+
+		// check mirror 3
+		mirror = generateValuesList(addr[3], addr[4]);
+		check = getReadedValuesList(mirror);
+		assertTrue(check.equals(values));
+	}
+
+	private List<Integer> generateValuesList(int start, int end) {
+		return IntStream.range(start, end).boxed().collect(Collectors.toList());
+	}
+
+	private List<Integer> getReadedValuesList(final List<Integer> values) {
+		return values.stream().map(ram::read).collect(Collectors.toList());
 	}
 
 }

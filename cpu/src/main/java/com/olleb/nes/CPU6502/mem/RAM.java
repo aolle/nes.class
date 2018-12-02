@@ -26,11 +26,11 @@ public final class RAM implements Memory {
 	// Zero page: 0x0000 - 0x00FF
 	// Stack: 0x0100 - 0x01FF
 	// RAM: 0x0200 - 0x0800
-	// Mirrors 0x000:0x07FF => 0x0800 - 0x1FFF
+	// Mirrors 0x0000:0x07FF => 0x0800 - 0x1FFF
 	private final int mem[] = new int[Address.RAM_END.value + 1];
 
 	private enum Address {
-		RAM_TOTAL_BEGIN(0x000),
+		RAM_TOTAL_BEGIN(0x0000),
 		RAM_END(0x07FF),
 		RAM_MIRROR_BEGIN(0x0800),
 		RAM_MIRROR_END(0x1FFF),
