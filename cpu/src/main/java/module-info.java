@@ -1,5 +1,5 @@
 /**
- * nes11 - MOS6502 emulator
+ * nes - NES / Famicom emulator
  * 
  * Copyright (C) 2018 Àngel Ollé Blázquez
  * 
@@ -19,4 +19,5 @@
 
 module cpu {
 	exports com.olleb.nes.CPU6502.cpu;
+	exports com.olleb.nes.CPU6502.mem;
 }

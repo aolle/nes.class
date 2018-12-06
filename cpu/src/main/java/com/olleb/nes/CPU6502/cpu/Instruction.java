@@ -1,5 +1,5 @@
 /**
- * nes - 6502 CPU Emulator
+ * nes - NES / Famicom emulator
  * 
  * Copyright (C) 2018 Àngel Ollé Blázquez
  * 
@@ -19,32 +19,48 @@
 
 package com.olleb.nes.CPU6502.cpu;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import com.olleb.nes.CPU6502.mem.Memory;
+
 @SuppressWarnings("unused")
-public enum Instruction implements InstructionStrategy<Registers> {
+public enum Instruction implements InstructionStrategy<Memory> {
 
-	// $ -> hex, ! -> dec, % -> binary
-	// # -> imm lower byte, / -> imm upper byte
-	// %1 1st byte, %2 2nd byte, %3 offset
+	/**
+	 * $ -> hex, ! -> dec, % -> binary # -> imm lower byte, / -> imm upper byte %1
+	 * 1st byte, %2 2nd byte, %3 offset
+	 */
 
-	A9("LDA #$%1", 2, (var r) -> {
-		// TODO
-		return 1;
+	// format: opcode("name", bytes, registers => cycles
+
+	// Load/Store
+	A9("LDA #$%1", 2, (var r, var m) -> {
+		AddressingModes.IMMEDIATE.accept(r);
+		r.setA(m.read(r.getPc()));
+		return 2;
 	});
 
 	private final String opCode;
 	private final int size;
-	private final InstructionStrategy<Registers> instructionStrategy;
+	private final InstructionStrategy<Memory> instructionStrategy;
 
-	Instruction(final String opCode, final int size,
-			final InstructionStrategy<Registers> instructionStrategy) {
+	Instruction(final String opCode, final int size, final InstructionStrategy<Memory> instructionStrategy) {
 		this.opCode = opCode;
 		this.size = size;
 		this.instructionStrategy = instructionStrategy;
 	}
 
 	@Override
-	public int exec(final Registers r) {
-		return instructionStrategy.exec(r);
+	public int exec(final Registers r, final Memory m) {
+		return instructionStrategy.exec(r, m);
+	}
+
+	private static class AddressingModes {
+		private static final Function<Integer, Boolean> ZERO = i -> (i == 0);
+		// MSB 2^7 = 0x80
+		private static final Function<Integer, Boolean> NEGATIVE = i -> ((i & 0x80) != 0);
+		private static final Consumer<Registers> IMMEDIATE = r -> r.inc();
 	}
 
 }

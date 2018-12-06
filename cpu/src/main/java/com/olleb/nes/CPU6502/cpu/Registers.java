@@ -1,5 +1,5 @@
 /**
- * nes - 6502 CPU Emulator
+ * nes - NES / Famicom emulator
  * 
  * Copyright (C) 2018 Àngel Ollé Blázquez
  * 
@@ -22,12 +22,8 @@ package com.olleb.nes.CPU6502.cpu;
 public final class Registers {
 
 	/**
-	 * registers 
-	 * pc -> program counter 
-	 * sp -> stack pointer 
-	 * a -> accumulator 
-	 * x -> index register X 
-	 * y -> index register Y
+	 * registers pc -> program counter sp -> stack pointer a -> accumulator x ->
+	 * index register X y -> index register Y
 	 */
 	private int pc;
 	private int sp;
@@ -36,14 +32,8 @@ public final class Registers {
 	private int y;
 
 	/**
-	 * cpu status 
-	 * c -> carry flag 
-	 * z -> zero flag 
-	 * i -> interrupt disable 
-	 * d -> decimal mode flag 
-	 * b -> break command 
-	 * v -> overflow flag 
-	 * n -> negative flag
+	 * cpu status c -> carry flag z -> zero flag i -> interrupt disable d -> decimal
+	 * mode flag b -> break command v -> overflow flag n -> negative flag
 	 */
 	private boolean c;
 	private boolean z;
@@ -147,6 +137,10 @@ public final class Registers {
 
 	public void setN(boolean n) {
 		this.n = n;
+	}
+
+	public void inc() {
+		this.pc++;
 	}
 
 }

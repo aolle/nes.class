@@ -1,5 +1,5 @@
 /**
- * nes - 6502 CPU Emulator
+ * nes - NES / Famicom emulator
  * 
  * Copyright (C) 2018 Àngel Ollé Blázquez
  * 
@@ -37,19 +37,7 @@ import com.olleb.nes.CPU6502.mem.RAM;
 
 @DisplayName("RAM tests")
 @TestInstance(Lifecycle.PER_CLASS)
-class RAMTest {
-
-	private RAM ram;
-
-	@BeforeAll
-	public void init() {
-		ram = new RAM();
-	}
-
-	@BeforeEach
-	public void reset() {
-		ram.clear();
-	}
+class RAMTest extends RAMTemplate {
 
 	@Test
 	@DisplayName("Test RAM size")
@@ -60,7 +48,7 @@ class RAMTest {
 	@Test
 	@DisplayName("Test RAM writes and reads")
 	void testReadWrite() {
-		final int[] addr = { 0x0000, 0x0800, 0x1000, 0x1800, 0x1FFF };
+		final int[] addr = { 0x0000, 0x0800, 0x1000, 0x1800, 0x2000 };
 
 		// fill ram[0x0000] = 0x0000 to ram[0x01FF] = 0x01FF
 		final List<Integer> values = generateValuesList(addr[0], addr[1]);

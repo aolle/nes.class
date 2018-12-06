@@ -1,5 +1,5 @@
 /**
- * nes - 6502 CPU Emulator
+ * nes - NES / Famicom emulator
  * 
  * Copyright (C) 2018 Àngel Ollé Blázquez
  * 

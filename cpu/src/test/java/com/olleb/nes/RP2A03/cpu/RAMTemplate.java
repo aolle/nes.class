@@ -17,13 +17,25 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.olleb.nes.CPU6502.cpu;
+package com.olleb.nes.RP2A03.cpu;
 
-import com.olleb.nes.CPU6502.mem.Memory;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
-@FunctionalInterface
-interface InstructionStrategy<T extends Memory> {
+import com.olleb.nes.CPU6502.mem.RAM;
+
+public abstract class RAMTemplate {
 	
-	int exec(Registers registers, T t);
+	protected RAM ram;
+
+	@BeforeAll
+	public void init() {
+		ram = new RAM();
+	}
+
+	@BeforeEach
+	public void reset() {
+		ram.clear();
+	}
 
 }

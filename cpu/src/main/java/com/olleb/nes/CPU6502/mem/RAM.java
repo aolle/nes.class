@@ -1,5 +1,5 @@
 /**
- * nes - 6502 CPU Emulator
+ * nes - NES / Famicom emulator
  * 
  * Copyright (C) 2018 Àngel Ollé Blázquez
  * 
@@ -34,7 +34,9 @@ public final class RAM implements Memory {
 		RAM_END(0x07FF),
 		RAM_MIRROR_BEGIN(0x0800),
 		RAM_MIRROR_END(0x1FFF),
-		RAM_TOTAL_END(0x1FFF);
+		RAM_TOTAL_END(0x1FFF),
+		RESET_VECTOR_0_(0xFFFC),
+		RESET_VECTOR_1_(0xFFFD);
 		
 		private final int value;
 
