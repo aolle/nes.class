@@ -20,6 +20,7 @@
 package com.olleb.nes.RP2A03.cpu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +45,38 @@ class InstructionsTest extends RAMTemplate {
 	}
 
 	@Test
+	@DisplayName("Load Accumulator Zero Page - A5")
+	void testA5() {
+		// TODO: refactor LDA Tests. Finish test A5
+//		final String op = "A5";
+//		final int addr = 0x100;
+//		final int value = 0x0A;
+//		final int cycles = 2;
+//
+//		registers.setPc(addr - 1);
+//		ram.write(addr, value);
+//		Instruction instruction = Instruction.valueOf(Instruction.class, op);
+//		int result = instruction.exec(registers, ram);
+//
+//		assertEquals(op, instruction.toString());
+//		assertEquals(addr, registers.getPc());
+//		assertEquals(cycles, result);
+//		assertEquals(value, registers.getA());
+//
+//		registers.setPc(addr - 1);
+//		ram.write(addr, 0);
+//		instruction.exec(registers, ram);
+//		assertEquals(0, registers.getA());
+//		assertTrue(registers.isZ());
+//
+//		registers.setPc(addr - 1);
+//		ram.write(addr, 0x80);
+//		instruction.exec(registers, ram);
+//		assertTrue(registers.isN());
+
+	}
+	
+	@Test
 	@DisplayName("Load Accumulator Immediate - A9")
 	void testA9() {
 		final String op = "A9";
@@ -51,15 +84,27 @@ class InstructionsTest extends RAMTemplate {
 		final int value = 0x0A;
 		final int cycles = 2;
 
-		ram.write(addr, value);
 		registers.setPc(addr - 1);
+		ram.write(addr, value);
 		Instruction instruction = Instruction.valueOf(Instruction.class, op);
 		int result = instruction.exec(registers, ram);
-		
+
 		assertEquals(op, instruction.toString());
 		assertEquals(addr, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
+
+		registers.setPc(addr - 1);
+		ram.write(addr, 0);
+		instruction.exec(registers, ram);
+		assertEquals(0, registers.getA());
+		assertTrue(registers.isZ());
+
+		registers.setPc(addr - 1);
+		ram.write(addr, 0x80);
+		instruction.exec(registers, ram);
+		assertTrue(registers.isN());
+
 	}
 
 }

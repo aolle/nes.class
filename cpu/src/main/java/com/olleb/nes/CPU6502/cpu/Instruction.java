@@ -21,6 +21,8 @@ package com.olleb.nes.CPU6502.cpu;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.IntUnaryOperator;
 
 import com.olleb.nes.CPU6502.mem.Memory;
 
@@ -32,13 +34,22 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	 * 1st byte, %2 2nd byte, %3 offset
 	 */
 
-	// format: opcode("name", bytes, registers => cycles
+	// format: opcode("name", bytes, registers) => cycles
 
 	// Load/Store
-	A9("LDA #$%1", 2, (var r, var m) -> {
+	A9("LDA #nn", 2, (var r, var m) -> {
 		AddressingModes.IMMEDIATE.accept(r);
-		r.setA(m.read(r.getPc()));
+		final int value = m.read(r.getPc());
+		r.setA(value);
+		Flags.setFlags(r, value);
 		return 2;
+	}),
+
+	A5("LDA nn", 2, (var r, var m) -> {
+		final int value = AddressingModes.ZERO_PAGE.apply(r).apply(m);
+		r.setA(value);
+		Flags.setFlags(r, value);
+		return 3;
 	});
 
 	private final String opCode;
@@ -56,11 +67,20 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return instructionStrategy.exec(r, m);
 	}
 
-	private static class AddressingModes {
-		private static final Function<Integer, Boolean> ZERO = i -> (i == 0);
+	private static class Flags {
+		private static final IntFunction<Boolean> ZERO = i -> (i == 0);
 		// MSB 2^7 = 0x80
-		private static final Function<Integer, Boolean> NEGATIVE = i -> ((i & 0x80) != 0);
+		private static final IntFunction<Boolean> NEGATIVE = i -> ((i & 0x80) != 0);
+
+		public static final void setFlags(final Registers registers, final int value) {
+			registers.setZ(Flags.ZERO.apply(value));
+			registers.setN(Flags.NEGATIVE.apply(value));
+		}
+	}
+
+	private static class AddressingModes {
 		private static final Consumer<Registers> IMMEDIATE = r -> r.inc();
+		private static final Function<Registers, Function<Memory, Integer>> ZERO_PAGE = r -> m -> m.read(r.inc());
 	}
 
 }
