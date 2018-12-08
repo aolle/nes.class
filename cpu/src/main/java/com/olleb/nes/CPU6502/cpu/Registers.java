@@ -140,7 +140,7 @@ public final class Registers {
 	}
 
 	public int inc() {
-		return this.pc++;
+		return ++pc;
 	}
 
 }

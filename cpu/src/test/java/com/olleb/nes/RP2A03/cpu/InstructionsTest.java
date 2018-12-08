@@ -47,40 +47,32 @@ class InstructionsTest extends RAMTemplate {
 	@Test
 	@DisplayName("Load Accumulator Zero Page - A5")
 	void testA5() {
-		// TODO: refactor LDA Tests. Finish test A5
-//		final String op = "A5";
-//		final int addr = 0x100;
-//		final int value = 0x0A;
-//		final int cycles = 2;
-//
-//		registers.setPc(addr - 1);
-//		ram.write(addr, value);
-//		Instruction instruction = Instruction.valueOf(Instruction.class, op);
-//		int result = instruction.exec(registers, ram);
-//
-//		assertEquals(op, instruction.toString());
-//		assertEquals(addr, registers.getPc());
-//		assertEquals(cycles, result);
-//		assertEquals(value, registers.getA());
-//
-//		registers.setPc(addr - 1);
-//		ram.write(addr, 0);
-//		instruction.exec(registers, ram);
-//		assertEquals(0, registers.getA());
-//		assertTrue(registers.isZ());
-//
-//		registers.setPc(addr - 1);
-//		ram.write(addr, 0x80);
-//		instruction.exec(registers, ram);
-//		assertTrue(registers.isN());
+		final String op = "A5";
+		final int addr = 0x300;
+		final int valueAddr = 0x0A;
+		final int value = 0xbb;
+		final int cycles = 3;
+
+		registers.setPc(addr - 1);
+		ram.write(addr, valueAddr);
+		ram.write(valueAddr, value);
+		Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		int result = instruction.exec(registers, ram);
+
+		assertEquals(op, instruction.toString());
+		assertEquals(addr, registers.getPc());
+		assertEquals(cycles, result);
+		assertEquals(value, registers.getA());
+
+// TODO : test zero and negative flags
 
 	}
-	
+
 	@Test
 	@DisplayName("Load Accumulator Immediate - A9")
 	void testA9() {
 		final String op = "A9";
-		final int addr = 0x100;
+		final int addr = 0x300;
 		final int value = 0x0A;
 		final int cycles = 2;
 
@@ -94,12 +86,14 @@ class InstructionsTest extends RAMTemplate {
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
+		// zero flag
 		registers.setPc(addr - 1);
 		ram.write(addr, 0);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
+		// negative flag
 		registers.setPc(addr - 1);
 		ram.write(addr, 0x80);
 		instruction.exec(registers, ram);

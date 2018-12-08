@@ -80,7 +80,10 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	private static class AddressingModes {
 		private static final Consumer<Registers> IMMEDIATE = r -> r.inc();
-		private static final Function<Registers, Function<Memory, Integer>> ZERO_PAGE = r -> m -> m.read(r.inc());
+		private static final Function<Registers, Function<Memory, Integer>> ZERO_PAGE = r -> m -> {
+			final int i = m.read(r.inc());
+			return m.read(i);
+		};
 	}
 
 }
