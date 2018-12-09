@@ -19,10 +19,9 @@
 
 package com.olleb.nes.CPU6502.cpu;
 
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.IntUnaryOperator;
 
 import com.olleb.nes.CPU6502.mem.Memory;
 
@@ -36,20 +35,28 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	// format: opcode("name", bytes, registers) => cycles
 
+	// TODO: refactor r.setA; Flags.setFlags.
+
 	// Load/Store
-	A9("LDA #nn", 2, (var r, var m) -> {
-		AddressingModes.IMMEDIATE.accept(r);
-		final int value = m.read(r.getPc());
+	_A9("LDA #nn", 2, (var r, var m) -> {
+		final int value = AddressingModes.IMMEDIATE.apply(r, m);
 		r.setA(value);
 		Flags.setFlags(r, value);
 		return 2;
 	}),
 
-	A5("LDA nn", 2, (var r, var m) -> {
-		final int value = AddressingModes.ZERO_PAGE.apply(r).apply(m);
+	_A5("LDA nn", 2, (var r, var m) -> {
+		final int value = AddressingModes.ZERO_PAGE.apply(r, m);
 		r.setA(value);
 		Flags.setFlags(r, value);
 		return 3;
+	}),
+
+	_B5("LDA nn,X", 2, (var r, var m) -> {
+		final int value = AddressingModes.INDEXED_ZERO_PAGE_X.apply(r, m);
+		r.setA(value);
+		Flags.setFlags(r, value);
+		return 4;
 	});
 
 	private final String opCode;
@@ -70,7 +77,7 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	private static class Flags {
 		private static final IntFunction<Boolean> ZERO = i -> (i == 0);
 		// MSB 2^7 = 0x80
-		private static final IntFunction<Boolean> NEGATIVE = i -> ((i & 0x80) != 0);
+		private static final IntFunction<Boolean> NEGATIVE = i -> ((i & 0x0080) != 0);
 
 		public static final void setFlags(final Registers registers, final int value) {
 			registers.setZ(Flags.ZERO.apply(value));
@@ -79,11 +86,18 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	}
 
 	private static class AddressingModes {
-		private static final Consumer<Registers> IMMEDIATE = r -> r.inc();
-		private static final Function<Registers, Function<Memory, Integer>> ZERO_PAGE = r -> m -> {
-			final int i = m.read(r.inc());
-			return m.read(i);
-		};
+		// TODO: use RAM.Address to solve mem addresses like indexed zero page
+
+		private static final BiFunction<Registers, Memory, Integer> IMMEDIATE = (r, m) -> m.read(r.inc());
+
+		private static final BiFunction<Registers, Memory, Integer> ZERO_PAGE = (r, m) -> m.read(IMMEDIATE.apply(r, m));
+
+		private static final BiFunction<Registers, Memory, IntFunction<Integer>> _INDEXED_ZERO_PAGE_PARAM = (r,
+				m) -> i -> m.read(IMMEDIATE.apply(r, m) + i & 0x00FF);
+
+		private static final BiFunction<Registers, Memory, Integer> INDEXED_ZERO_PAGE_X = (r,
+				m) -> _INDEXED_ZERO_PAGE_PARAM.apply(r, m).apply(r.getX());
+
 	}
 
 }

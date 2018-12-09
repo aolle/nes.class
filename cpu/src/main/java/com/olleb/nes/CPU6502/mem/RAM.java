@@ -36,7 +36,9 @@ public final class RAM implements Memory {
 		RAM_MIRROR_END(0x1FFF),
 		RAM_TOTAL_END(0x1FFF),
 		RESET_VECTOR_0_(0xFFFC),
-		RESET_VECTOR_1_(0xFFFD);
+		RESET_VECTOR_1_(0xFFFD),
+		RAM_ZERO_PAGE_BEGIN(0x0000),
+		RAM_ZERO_PAGE_END(0x00FF);
 		
 		private final int value;
 
