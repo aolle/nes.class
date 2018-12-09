@@ -17,7 +17,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.olleb.nes.RP2A03.cpu;
+package com.olleb.nes.CPU6502.mem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,7 +33,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 @DisplayName("RAM tests")
 @TestInstance(Lifecycle.PER_CLASS)
-class RAMTest extends RAMTemplate {
+class RAMTest extends RAMTestBase {
 
 	@Test
 	@DisplayName("Test RAM size")
@@ -68,6 +68,9 @@ class RAMTest extends RAMTemplate {
 		mirror = generateValuesList(addr[3], addr[4]);
 		check = getReadedValuesList(mirror);
 		assertTrue(check.equals(values));
+		
+		// oom
+		assertEquals(-1, ram.read(0xFFFFF));
 	}
 
 	private List<Integer> generateValuesList(int start, int end) {

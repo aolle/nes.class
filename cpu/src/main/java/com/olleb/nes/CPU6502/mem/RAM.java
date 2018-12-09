@@ -31,6 +31,7 @@ public final class RAM implements Memory {
 
 	private enum Address {
 		RAM_TOTAL_BEGIN(0x0000),
+		RAM_BEGIN(0x0200),
 		RAM_END(0x07FF),
 		RAM_MIRROR_BEGIN(0x0800),
 		RAM_MIRROR_END(0x1FFF),
@@ -38,7 +39,9 @@ public final class RAM implements Memory {
 		RESET_VECTOR_0_(0xFFFC),
 		RESET_VECTOR_1_(0xFFFD),
 		RAM_ZERO_PAGE_BEGIN(0x0000),
-		RAM_ZERO_PAGE_END(0x00FF);
+		RAM_ZERO_PAGE_END(0x00FF),
+		RAM_STACK_BEGIN(0x0100),
+		RAM_STACK_END(0x01FF);
 		
 		private final int value;
 

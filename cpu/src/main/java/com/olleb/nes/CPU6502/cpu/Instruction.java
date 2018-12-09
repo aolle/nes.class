@@ -30,7 +30,6 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	/**
 	 * $ -> hex, ! -> dec, % -> binary # -> imm lower byte, / -> imm upper byte %1
-	 * 1st byte, %2 2nd byte, %3 offset
 	 */
 
 	// format: opcode("name", bytes, registers) => cycles
@@ -49,6 +48,11 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	_B5("LDA nn,X", 2, (var r, var m) -> {
 		loadAccumulator(r, AddressingModes.INDEXED_ZERO_PAGE_X.apply(r, m));
 		return 4;
+	}),
+
+	_AD("LDA nnnn", 3, (var r, var m) -> {
+		loadAccumulator(r, AddressingModes.ABSOLUTE.apply(r, m));
+		return 4;
 	});
 
 	private final String opCode;
@@ -64,6 +68,14 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	@Override
 	public int exec(final Registers r, final Memory m) {
 		return instructionStrategy.exec(r, m);
+	}
+
+	public String getOpCode() {
+		return opCode;
+	}
+
+	public int getSize() {
+		return size;
 	}
 
 	private static void loadAccumulator(final Registers registers, final int result) {
@@ -87,13 +99,18 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 		private static final BiFunction<Registers, Memory, Integer> IMMEDIATE = (r, m) -> m.read(r.inc());
 
-		private static final BiFunction<Registers, Memory, Integer> ZERO_PAGE = (r, m) -> m.read(IMMEDIATE.apply(r, m));
+		private static final BiFunction<Registers, Memory, Integer> ZERO_PAGE = (r, m) -> m.read(m.read(r.inc()));
 
 		private static final BiFunction<Registers, Memory, IntFunction<Integer>> _INDEXED_ZERO_PAGE_PARAM = (r,
-				m) -> i -> m.read(IMMEDIATE.apply(r, m) + i & 0x00FF);
+				m) -> i -> m.read(m.read(r.inc()) + i & 0x00FF);
 
 		private static final BiFunction<Registers, Memory, Integer> INDEXED_ZERO_PAGE_X = (r,
 				m) -> _INDEXED_ZERO_PAGE_PARAM.apply(r, m).apply(r.getX());
+
+		// int 4 bytes (32 bits). Abs uses 16 bit address (2 x 8 bit).
+		// LSB -> shift 2nd (least) value 8 bits to the left and add 1st.
+		private static final BiFunction<Registers, Memory, Integer> ABSOLUTE = (r, m) -> m
+				.read(m.read(r.inc()) + (m.read(r.inc()) << 8));
 
 	}
 

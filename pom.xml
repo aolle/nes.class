@@ -9,6 +9,8 @@
 
 	<modules>
 		<module>cpu</module>
+<!-- 		<module>ppu</module> -->
+<!-- 		<module>apu</module> -->
 	</modules>
 
 	<name>nes</name>
