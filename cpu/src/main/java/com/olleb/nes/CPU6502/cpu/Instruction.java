@@ -35,27 +35,19 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	// format: opcode("name", bytes, registers) => cycles
 
-	// TODO: refactor r.setA; Flags.setFlags.
-
 	// Load/Store
 	_A9("LDA #nn", 2, (var r, var m) -> {
-		final int value = AddressingModes.IMMEDIATE.apply(r, m);
-		r.setA(value);
-		Flags.setFlags(r, value);
+		loadAccumulator(r, AddressingModes.IMMEDIATE.apply(r, m));
 		return 2;
 	}),
 
 	_A5("LDA nn", 2, (var r, var m) -> {
-		final int value = AddressingModes.ZERO_PAGE.apply(r, m);
-		r.setA(value);
-		Flags.setFlags(r, value);
+		loadAccumulator(r, AddressingModes.ZERO_PAGE.apply(r, m));
 		return 3;
 	}),
 
 	_B5("LDA nn,X", 2, (var r, var m) -> {
-		final int value = AddressingModes.INDEXED_ZERO_PAGE_X.apply(r, m);
-		r.setA(value);
-		Flags.setFlags(r, value);
+		loadAccumulator(r, AddressingModes.INDEXED_ZERO_PAGE_X.apply(r, m));
 		return 4;
 	});
 
@@ -74,6 +66,11 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return instructionStrategy.exec(r, m);
 	}
 
+	private static void loadAccumulator(final Registers registers, final int result) {
+		registers.setA(result);
+		Flags.setFlags(registers, result);
+	}
+
 	private static class Flags {
 		private static final IntFunction<Boolean> ZERO = i -> (i == 0);
 		// MSB 2^7 = 0x80
@@ -86,7 +83,7 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	}
 
 	private static class AddressingModes {
-		// TODO: use RAM.Address to solve mem addresses like indexed zero page
+		// TODO: use RAM.Address to solve mem addresses like indexed zero page?
 
 		private static final BiFunction<Registers, Memory, Integer> IMMEDIATE = (r, m) -> m.read(r.inc());
 
