@@ -20,8 +20,11 @@
 package com.olleb.nes.CPU6502.cpu;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.BiPredicate;
+import java.util.function.IntBinaryOperator;
 import java.util.function.IntFunction;
+import java.util.function.IntPredicate;
+import java.util.function.ToIntBiFunction;
 
 import com.olleb.nes.CPU6502.mem.Memory;
 
@@ -30,29 +33,45 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	/**
 	 * $ -> hex, ! -> dec, % -> binary # -> imm lower byte, / -> imm upper byte %1
+	 *
+	 * format: opcode("name", bytes, registers) => cycles
 	 */
 
-	// format: opcode("name", bytes, registers) => cycles
-
-	// Load/Store
+	/**
+	 * Load/Store
+	 */
 	_A9("LDA #nn", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingModes.IMMEDIATE.apply(r, m));
+		loadAccumulator(r, AddressingModes.IMMEDIATE.applyAsInt(r, m));
 		return 2;
 	}),
 
 	_A5("LDA nn", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingModes.ZERO_PAGE.apply(r, m));
+		loadAccumulator(r, AddressingModes.ZERO_PAGE.applyAsInt(r, m));
 		return 3;
 	}),
 
 	_B5("LDA nn,X", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingModes.INDEXED_ZERO_PAGE_X.apply(r, m));
+		loadAccumulator(r, AddressingModes.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
 		return 4;
 	}),
 
 	_AD("LDA nnnn", 3, (var r, var m) -> {
-		loadAccumulator(r, AddressingModes.ABSOLUTE.apply(r, m));
+		loadAccumulator(r, AddressingModes.ABSOLUTE.applyAsInt(r, m));
 		return 4;
+	}),
+
+	_BD("LDA nnnn,X", 3, (var r, var m) -> {
+		loadAccumulator(r, AddressingModes.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		// TODO: optimize this.
+		final int addr = m.read(r.getPc() - 2) + (m.read(r.getPc() - 1) << 8);
+		return AddressingModes.PAGE_CROSSED.test(addr, addr + r.getX()) ? 5 : 4;
+	}),
+
+	_B9("LDA nnnn,Y", 3, (var r, var m) -> {
+		loadAccumulator(r, AddressingModes.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
+		// TODO: optimize this.
+		final int addr = m.read(r.getPc() - 2) + (m.read(r.getPc() - 1) << 8);
+		return AddressingModes.PAGE_CROSSED.test(addr, addr + r.getY()) ? 5 : 4;
 	});
 
 	private final String opCode;
@@ -84,33 +103,50 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	}
 
 	private static class Flags {
-		private static final IntFunction<Boolean> ZERO = i -> (i == 0);
-		// MSB 2^7 = 0x80
-		private static final IntFunction<Boolean> NEGATIVE = i -> ((i & 0x0080) != 0);
+		private static final IntPredicate ZERO = x -> (x == 0);
+		// MSB 2^7 = 0x0080
+		private static final IntPredicate NEGATIVE = x -> ((x & 0x0080) != 0);
 
 		public static final void setFlags(final Registers registers, final int value) {
-			registers.setZ(Flags.ZERO.apply(value));
-			registers.setN(Flags.NEGATIVE.apply(value));
+			registers.setZ(Flags.ZERO.test(value));
+			registers.setN(Flags.NEGATIVE.test(value));
 		}
 	}
 
 	private static class AddressingModes {
+		// same page => high-byte of addresses have the same value
+		// example: 0xFE00 - 0xFEFF, different page: 0xFE00 - 0xFF00
+		private static final BiPredicate<Integer, Integer> PAGE_CROSSED = (x, y) -> (x >> 8 != y >> 8);
+
 		// TODO: use RAM.Address to solve mem addresses like indexed zero page?
 
-		private static final BiFunction<Registers, Memory, Integer> IMMEDIATE = (r, m) -> m.read(r.inc());
+		private static final ToIntBiFunction<Registers, Memory> IMMEDIATE = (r, m) -> m.read(r.inc());
 
-		private static final BiFunction<Registers, Memory, Integer> ZERO_PAGE = (r, m) -> m.read(m.read(r.inc()));
+		private static final ToIntBiFunction<Registers, Memory> ZERO_PAGE = (r, m) -> m.read(m.read(r.inc()));
 
+		// wraparound => the data addr always in zero page 0x000 - 0x00FF
 		private static final BiFunction<Registers, Memory, IntFunction<Integer>> _INDEXED_ZERO_PAGE_PARAM = (r,
-				m) -> i -> m.read(m.read(r.inc()) + i & 0x00FF);
+				m) -> x -> m.read(m.read(r.inc()) + x & 0x00FF);
 
-		private static final BiFunction<Registers, Memory, Integer> INDEXED_ZERO_PAGE_X = (r,
-				m) -> _INDEXED_ZERO_PAGE_PARAM.apply(r, m).apply(r.getX());
+		// TODO: join lambdas
+		private static final ToIntBiFunction<Registers, Memory> INDEXED_ZERO_PAGE_X = (r, m) -> _INDEXED_ZERO_PAGE_PARAM
+				.apply(r, m).apply(r.getX());
 
 		// int 4 bytes (32 bits). Abs uses 16 bit address (2 x 8 bit).
 		// LSB -> shift 2nd (least) value 8 bits to the left and add 1st.
-		private static final BiFunction<Registers, Memory, Integer> ABSOLUTE = (r, m) -> m
+		private static final ToIntBiFunction<Registers, Memory> ABSOLUTE = (r, m) -> m
 				.read(m.read(r.inc()) + (m.read(r.inc()) << 8));
+
+		// TODO: optimize this. Very similar with ABSOLUTE
+		private static final BiFunction<Registers, Memory, IntFunction<Integer>> _INDEXED_ABSOLUTE_PARAM = (r,
+				m) -> x -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8) + x);
+
+		// TODO: join lambdas
+		private static final ToIntBiFunction<Registers, Memory> INDEXED_ABSOLUTE_X = (r, m) -> _INDEXED_ABSOLUTE_PARAM
+				.apply(r, m).apply(r.getX());
+
+		private static final ToIntBiFunction<Registers, Memory> INDEXED_ABSOLUTE_Y = (r, m) -> _INDEXED_ABSOLUTE_PARAM
+				.apply(r, m).apply(r.getY());
 
 	}
 

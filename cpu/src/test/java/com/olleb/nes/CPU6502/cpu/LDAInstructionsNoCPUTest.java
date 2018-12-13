@@ -37,6 +37,99 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	private final int n = 1;
 
 	@Test
+	@DisplayName("Load Accumulator Indexed Absolute X / Y - BD/B9")
+	void testBDB9() {
+		final int addr = 0x0300;
+		final int valueM = 0x0000;
+		final int valueL = 0x0002;
+		final int addrValue = 0x0200;
+		final int value = 0xCAFE;
+		final int xy = 0x0010;
+		final int xy_crossed = 0x0100;
+
+		// LDA Absolute,X
+		String op = "_BD";
+		Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		int cycles = 4;
+
+		// page not crossed
+		registers.setPc(addr);
+		registers.setX(xy);
+		ram.write(addr + n, valueM);
+		ram.write(addr + n + 1, valueL);
+		ram.write(addrValue + xy, value);
+		int result = instruction.exec(registers, ram);
+
+		assertEquals(op, instruction.toString());
+		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(cycles, result);
+		assertEquals(value, registers.getA());
+
+		// page crossed
+		reset();
+		cycles = 5;
+		registers.setPc(addr);
+		registers.setX(xy_crossed);
+		ram.write(addr + n, valueM);
+		ram.write(addr + n + 1, valueL);
+		ram.write(addrValue + xy_crossed, value);
+		result = instruction.exec(registers, ram);
+
+		assertEquals(cycles, result);
+		assertEquals(value, registers.getA());
+
+		// LDA Absolute,Y
+		reset();
+		op = "_B9";
+		instruction = Instruction.valueOf(Instruction.class, op);
+		cycles = 4;
+
+		// page not crossed
+		registers.setPc(addr);
+		registers.setY(xy);
+		ram.write(addr + n, valueM);
+		ram.write(addr + n + 1, valueL);
+		ram.write(addrValue + xy, value);
+		result = instruction.exec(registers, ram);
+
+		assertEquals(op, instruction.toString());
+		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(cycles, result);
+		assertEquals(value, registers.getA());
+
+		// page crossed
+		reset();
+		cycles = 5;
+		registers.setPc(addr);
+		registers.setY(xy_crossed);
+		ram.write(addr + n, valueM);
+		ram.write(addr + n + 1, valueL);
+		ram.write(addrValue + xy_crossed, value);
+		result = instruction.exec(registers, ram);
+
+		assertEquals(cycles, result);
+		assertEquals(value, registers.getA());
+
+		// zero flag
+		registers.setPc(addr);
+		ram.write(addr + n, valueM);
+		ram.write(addr + n + 1, valueL);
+		ram.write(addrValue + xy_crossed, 0);
+		instruction.exec(registers, ram);
+		assertEquals(0, registers.getA());
+		assertTrue(registers.isZ());
+
+		// negative flag
+		registers.setPc(addr);
+		ram.write(addr + n, valueM);
+		ram.write(addr + n + 1, valueL);
+		ram.write(addrValue + xy_crossed, 0x0080);
+		instruction.exec(registers, ram);
+		assertTrue(registers.isN());
+
+	}
+
+	@Test
 	@DisplayName("Load Accumulator Absolute - AD")
 	void testAD() {
 		final String op = "_AD";
