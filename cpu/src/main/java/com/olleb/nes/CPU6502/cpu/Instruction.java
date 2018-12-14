@@ -72,6 +72,11 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		// TODO: optimize this.
 		final int addr = m.read(r.getPc() - 2) + (m.read(r.getPc() - 1) << 8);
 		return AddressingModes.PAGE_CROSSED.test(addr, addr + r.getY()) ? 5 : 4;
+	}),
+
+	_A1("LDA (nn,X)", 2, (var r, var m) -> {
+		loadAccumulator(r, AddressingModes.INDEXED_INDIRECT.applyAsInt(r, m));
+		return 6;
 	});
 
 	private final String opCode;
@@ -147,6 +152,12 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 		private static final ToIntBiFunction<Registers, Memory> INDEXED_ABSOLUTE_Y = (r, m) -> _INDEXED_ABSOLUTE_PARAM
 				.apply(r, m).apply(r.getY());
+
+		// wraparound
+		private static final ToIntBiFunction<Registers, Memory> INDEXED_INDIRECT = (r, m) -> {
+			final int i = m.read(r.inc()) + r.getX();
+			return m.read(m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8));
+		};
 
 	}
 
