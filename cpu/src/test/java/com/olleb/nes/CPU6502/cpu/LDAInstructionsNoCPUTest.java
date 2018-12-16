@@ -35,52 +35,52 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 
 	// no CPU Address Adjustment
 	private final int n = 1;
-	
+
 	@Test
 	@DisplayName("Load Accumulator Indirect Indexed - B1")
 	void testB1() {
-//		final String op = "_B1";
-//		final int addr = 0x0300;
-//		final int addrz = 0x000A;
-//		final int valueM = 0x0000;
-//		final int valueL = 0x0002;
-//		final int x = 0x0005;
-//		final int addrValue = 0x0200;
-//		final int value = 0xCAFE;
-//		final int cycles = 6;
-//		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
-//
-//		registers.setPc(addr);
-//		registers.setX(x);
-//		ram.write(addr + n, addrz);
-//		ram.write(addrz + x, valueM);
-//		ram.write(addrz + x + 1, valueL);
-//		ram.write(addrValue, value);
-//		int result = instruction.exec(registers, ram);
-//
-//		assertEquals(op, instruction.toString());
-//		assertEquals(addr + instruction.getSize() - n, registers.getPc());
-//		assertEquals(cycles, result);
-//		assertEquals(value, registers.getA());
-//
-//		// zero flag
-//		registers.setPc(addr);
-//		ram.write(addr + n, addrz);
-//		ram.write(addrz + x, valueM);
-//		ram.write(addrz + x + 1, valueL);
-//		ram.write(addrValue, 0);
-//		instruction.exec(registers, ram);
-//		assertEquals(0, registers.getA());
-//		assertTrue(registers.isZ());
-//
-//		// negative flag
-//		registers.setPc(addr);
-//		ram.write(addr + n, addrz);
-//		ram.write(addrz + x, valueM);
-//		ram.write(addrz + x + 1, valueL);
-//		ram.write(addrValue, 0x0080);
-//		instruction.exec(registers, ram);
-//		assertTrue(registers.isN());
+		final String op = "_B1";
+		final int ep = 0x0300;
+		final int addrz = 0x000A;
+		final int valueM = 0x0000;
+		final int valueL = 0x0002;
+		final int y = 0x0005;
+		final int addrValue = 0x0200;
+		final int value = 0xCAFE;
+		final int cycles = 5;
+		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
+
+		registers.setPc(ep);
+		registers.setY(y);
+		ram.write(ep + n, addrz);
+		ram.write(addrz, valueM);
+		ram.write(addrz + 1, valueL);
+		ram.write(addrValue + y, value);
+		int result = instruction.exec(registers, ram);
+
+		assertEquals(op, instruction.toString());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(cycles, result);
+		assertEquals(value, registers.getA());
+
+		// zero flag
+		registers.setPc(ep);
+		ram.write(ep + n, addrz);
+		ram.write(addrz, valueM);
+		ram.write(addrz + 1, valueL);
+		ram.write(addrValue + y, 0);
+		instruction.exec(registers, ram);
+		assertEquals(0, registers.getA());
+		assertTrue(registers.isZ());
+
+		// negative flag
+		registers.setPc(ep);
+		ram.write(ep + n, addrz);
+		ram.write(addrz, valueM);
+		ram.write(addrz + 1, valueL);
+		ram.write(addrValue + y, 0x0080);
+		instruction.exec(registers, ram);
+		assertTrue(registers.isN());
 
 	}
 
@@ -88,45 +88,45 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@DisplayName("Load Accumulator Indexed Indirect - A1")
 	void testA1() {
 		final String op = "_A1";
-		final int addr = 0x0300;
+		final int ep = 0x0300;
 		final int addrz = 0x000A;
 		final int valueM = 0x0000;
 		final int valueL = 0x0002;
 		final int x = 0x0005;
-		final int addrValue = 0x0200;
+		final int addr = 0x0200;
 		final int value = 0xCAFE;
 		final int cycles = 6;
 		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
 
-		registers.setPc(addr);
+		registers.setPc(ep);
 		registers.setX(x);
-		ram.write(addr + n, addrz);
+		ram.write(ep + n, addrz);
 		ram.write(addrz + x, valueM);
 		ram.write(addrz + x + 1, valueL);
-		ram.write(addrValue, value);
+		ram.write(addr, value);
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.toString());
-		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(addr);
-		ram.write(addr + n, addrz);
+		registers.setPc(ep);
+		ram.write(ep + n, addrz);
 		ram.write(addrz + x, valueM);
 		ram.write(addrz + x + 1, valueL);
-		ram.write(addrValue, 0);
+		ram.write(addr, 0);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(addr);
-		ram.write(addr + n, addrz);
+		registers.setPc(ep);
+		ram.write(ep + n, addrz);
 		ram.write(addrz + x, valueM);
 		ram.write(addrz + x + 1, valueL);
-		ram.write(addrValue, 0x0080);
+		ram.write(addr, 0x0080);
 		instruction.exec(registers, ram);
 		assertTrue(registers.isN());
 
@@ -135,10 +135,10 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@Test
 	@DisplayName("Load Accumulator Indexed Absolute X / Y - BD/B9")
 	void testBDB9() {
-		final int addr = 0x0300;
+		final int ep = 0x0300;
 		final int valueM = 0x0000;
 		final int valueL = 0x0002;
-		final int addrValue = 0x0200;
+		final int addr = 0x0200;
 		final int value = 0xCAFE;
 		final int xy = 0x0010;
 		final int xy_crossed = 0x0100;
@@ -149,26 +149,26 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		int cycles = 4;
 
 		// page not crossed
-		registers.setPc(addr);
+		registers.setPc(ep);
 		registers.setX(xy);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue + xy, value);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr + xy, value);
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.toString());
-		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// page crossed
 		reset();
 		cycles = 5;
-		registers.setPc(addr);
+		registers.setPc(ep);
 		registers.setX(xy_crossed);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue + xy_crossed, value);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr + xy_crossed, value);
 		result = instruction.exec(registers, ram);
 
 		assertEquals(cycles, result);
@@ -181,45 +181,45 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		cycles = 4;
 
 		// page not crossed
-		registers.setPc(addr);
+		registers.setPc(ep);
 		registers.setY(xy);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue + xy, value);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr + xy, value);
 		result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.toString());
-		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// page crossed
 		reset();
 		cycles = 5;
-		registers.setPc(addr);
+		registers.setPc(ep);
 		registers.setY(xy_crossed);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue + xy_crossed, value);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr + xy_crossed, value);
 		result = instruction.exec(registers, ram);
 
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue + xy_crossed, 0);
+		registers.setPc(ep);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr + xy_crossed, 0);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue + xy_crossed, 0x0080);
+		registers.setPc(ep);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr + xy_crossed, 0x0080);
 		instruction.exec(registers, ram);
 		assertTrue(registers.isN());
 
@@ -229,39 +229,39 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@DisplayName("Load Accumulator Absolute - AD")
 	void testAD() {
 		final String op = "_AD";
-		final int addr = 0x0300;
+		final int ep = 0x0300;
 		final int valueM = 0x0000;
 		final int valueL = 0x0002;
-		final int addrValue = 0x0200;
+		final int addr = 0x0200;
 		final int value = 0xCAFE;
 		final int cycles = 4;
 		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
 
-		registers.setPc(addr);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue, value);
+		registers.setPc(ep);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr, value);
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.toString());
-		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue, 0);
+		registers.setPc(ep);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr, 0);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueM);
-		ram.write(addr + n + 1, valueL);
-		ram.write(addrValue, 0x0080);
+		registers.setPc(ep);
+		ram.write(ep + n, valueM);
+		ram.write(ep + n + 1, valueL);
+		ram.write(addr, 0x0080);
 		instruction.exec(registers, ram);
 		assertTrue(registers.isN());
 
@@ -271,38 +271,38 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@DisplayName("Load Accumulator Indexed Zero Page X - B5")
 	void testB5() {
 		final String op = "_B5";
-		final int addr = 0x0300;
+		final int ep = 0x0300;
 		final int X = 0x0010;
-		final int valueAddr = 0x000A;
+		final int addr = 0x000A;
 		final int value = 0xCAFE;
 		final int cycles = 4;
 		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
 
-		registers.setPc(addr);
+		registers.setPc(ep);
 		registers.setX(X);
-		ram.write(addr + n, valueAddr);
-		ram.write(valueAddr + X, value);
+		ram.write(ep + n, addr);
+		ram.write(addr + X, value);
 
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.toString());
-		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(X, registers.getX());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueAddr);
-		ram.write(valueAddr + X, 0);
+		registers.setPc(ep);
+		ram.write(ep + n, addr);
+		ram.write(addr + X, 0);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueAddr);
-		ram.write(valueAddr + X, 0x0080);
+		registers.setPc(ep);
+		ram.write(ep + n, addr);
+		ram.write(addr + X, 0x0080);
 		instruction.exec(registers, ram);
 		assertTrue(registers.isN());
 
@@ -312,35 +312,35 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@DisplayName("Load Accumulator Zero Page - A5")
 	void testA5() {
 		final String op = "_A5";
-		final int addr = 0x0300;
-		final int valueAddr = 0x000A;
+		final int ep = 0x0300;
+		final int addr = 0x000A;
 		final int value = 0xCAFE;
 		final int cycles = 3;
 		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
 
-		registers.setPc(addr);
-		ram.write(addr + n, valueAddr);
-		ram.write(valueAddr, value);
+		registers.setPc(ep);
+		ram.write(ep + n, addr);
+		ram.write(addr, value);
 
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.toString());
-		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueAddr);
-		ram.write(valueAddr, 0x0000);
+		registers.setPc(ep);
+		ram.write(ep + n, addr);
+		ram.write(addr, 0x0000);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(addr);
-		ram.write(addr + n, valueAddr);
-		ram.write(valueAddr, 0x0080);
+		registers.setPc(ep);
+		ram.write(ep + n, addr);
+		ram.write(addr, 0x0080);
 		instruction.exec(registers, ram);
 		assertTrue(registers.isN());
 
@@ -350,31 +350,31 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@DisplayName("Load Accumulator Immediate - A9")
 	void testA9() {
 		final String op = "_A9";
-		final int addr = 0x0300;
+		final int ep = 0x0300;
 		final int value = 0x000A;
 		final int cycles = 2;
 		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
 
-		registers.setPc(addr);
-		ram.write(addr + n, value);
+		registers.setPc(ep);
+		ram.write(ep + n, value);
 
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.toString());
-		assertEquals(addr + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(addr);
-		ram.write(addr + n, 0x0000);
+		registers.setPc(ep);
+		ram.write(ep + n, 0x0000);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(addr);
-		ram.write(addr + n, 0x0080);
+		registers.setPc(ep);
+		ram.write(ep + n, 0x0080);
 		instruction.exec(registers, ram);
 		assertTrue(registers.isN());
 

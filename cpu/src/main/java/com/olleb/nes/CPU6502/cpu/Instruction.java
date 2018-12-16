@@ -41,7 +41,6 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	 * Load/Store
 	 */
 	_A9("LDA #nn", 2, (var r, var m) -> {
-//		loadAccumulator(r, AddressingModes.IMMEDIATE.applyAsInt(r, m));
 		loadAccumulator(r, AddressingMode.IMMEDIATE.applyAsInt(r, m));
 		return 2;
 	}),
@@ -81,9 +80,10 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	}),
 
 	_B1("LDA (nn),Y", 2, (var r, var m) -> {
-		// TODO
 		loadAccumulator(r, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
-		return -1;
+		// TODO: optimize this.
+		final int addr = m.read(r.getPc() - 2) + (m.read(r.getPc() - 1) << 8);
+		return AddressingMode.PAGE_CROSSED.test(addr, addr + r.getY()) ? 6 : 5;
 	});
 
 	private final String opCode;
@@ -127,37 +127,32 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	private enum AddressingMode implements ToIntBiFunction<Registers, Memory> {
 		// TODO: use RAM.Address to solve mem addresses like indexed zero page?
-
 		IMMEDIATE((r, m) -> m.read(r.inc())),
 
 		ZERO_PAGE((r, m) -> m.read(m.read(r.inc()))),
 
-		// wraparound => the data addr always in zero page 0x000 - 0x00FF
+		// wraparound zero page => the data addr always in zero page 0x000 - 0x00FF
 		INDEXED_ZERO_PAGE_X((r, m) -> m.read(m.read(r.inc()) + r.getX() & 0x00FF)),
 
-//		// TODO: join lambdas
-//		private static final ToIntBiFunction<Registers, Memory> INDEXED_ZERO_PAGE_X = (r, m) -> _INDEXED_ZERO_PAGE_PARAM
-//				.apply(r, m).apply(r.getX());
-//
 		// int 4 bytes (32 bits). Abs uses 16 bit address (2 x 8 bit).
 		// LSB -> shift 2nd (least) value 8 bits to the left and add 1st.
 		ABSOLUTE((r, m) -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8))),
 
-		// TODO: optimize this. Very similar with ABSOLUTE
+		// TODO: optimize.
 		INDEXED_ABSOLUTE_X((r, m) -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getX())),
 
 		INDEXED_ABSOLUTE_Y((r, m) -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getY())),
 
-		// wraparound
+		// wraparound zero page
 		INDEXED_INDIRECT((r, m) -> {
 			final int i = m.read(r.inc()) + r.getX();
 			return m.read(m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8));
 		}),
 
-		// wraparound
+		// wraparound zero page
 		INDIRECT_INDEXED((r, m) -> {
-			// TODO
-			return -1;
+			final int i = m.read(r.inc());
+			return m.read((m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8)) + r.getY());
 		});
 
 		private final ToIntBiFunction<Registers, Memory> toIntBiFunction;
@@ -175,54 +170,4 @@ public enum Instruction implements InstructionStrategy<Memory> {
 			return this.toIntBiFunction.applyAsInt(r, m);
 		}
 	}
-
-	/**private static class AddressingModes {
-		// same page => high-byte of addresses have the same value
-		// example: 0xFE00 - 0xFEFF, different page: 0xFE00 - 0xFF00
-		private static final BiPredicate<Integer, Integer> PAGE_CROSSED = (x, y) -> (x >> 8 != y >> 8);
-
-		// TODO: use RAM.Address to solve mem addresses like indexed zero page?
-
-		private static final ToIntBiFunction<Registers, Memory> IMMEDIATE = (r, m) -> m.read(r.inc());
-
-		private static final ToIntBiFunction<Registers, Memory> ZERO_PAGE = (r, m) -> m.read(m.read(r.inc()));
-
-		// wraparound => the data addr always in zero page 0x000 - 0x00FF
-		private static final BiFunction<Registers, Memory, IntFunction<Integer>> _INDEXED_ZERO_PAGE_PARAM = (r,
-				m) -> x -> m.read(m.read(r.inc()) + x & 0x00FF);
-
-		// TODO: join lambdas
-		private static final ToIntBiFunction<Registers, Memory> INDEXED_ZERO_PAGE_X = (r, m) -> _INDEXED_ZERO_PAGE_PARAM
-				.apply(r, m).apply(r.getX());
-
-		// int 4 bytes (32 bits). Abs uses 16 bit address (2 x 8 bit).
-		// LSB -> shift 2nd (least) value 8 bits to the left and add 1st.
-		private static final ToIntBiFunction<Registers, Memory> ABSOLUTE = (r, m) -> m
-				.read(m.read(r.inc()) + (m.read(r.inc()) << 8));
-
-		// TODO: optimize this. Very similar with ABSOLUTE
-		private static final BiFunction<Registers, Memory, IntFunction<Integer>> _INDEXED_ABSOLUTE_PARAM = (r,
-				m) -> x -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8) + x);
-
-		// TODO: join lambdas
-		private static final ToIntBiFunction<Registers, Memory> INDEXED_ABSOLUTE_X = (r, m) -> _INDEXED_ABSOLUTE_PARAM
-				.apply(r, m).apply(r.getX());
-
-		private static final ToIntBiFunction<Registers, Memory> INDEXED_ABSOLUTE_Y = (r, m) -> _INDEXED_ABSOLUTE_PARAM
-				.apply(r, m).apply(r.getY());
-
-		// wraparound
-		private static final ToIntBiFunction<Registers, Memory> INDEXED_INDIRECT = (r, m) -> {
-			final int i = m.read(r.inc()) + r.getX();
-			return m.read(m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8));
-		};
-
-		// wraparound
-		private static final ToIntBiFunction<Registers, Memory> INDIRECT_INDEXED = (r, m) -> {
-			// TODO
-			return -1;
-		};
-
-	}**/
-
 }
