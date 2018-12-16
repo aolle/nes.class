@@ -22,8 +22,12 @@ package com.olleb.nes.CPU6502.cpu;
 public final class Registers {
 
 	/**
-	 * registers pc -> program counter, sp -> stack pointer, a -> accumulator, x ->
-	 * index register X, y -> index register Y
+	 * registers 
+	 * pc -> program counter 
+	 * sp -> stack pointer
+	 * a -> accumulator
+	 * x -> index register X
+	 * y -> index register Y
 	 */
 	private int pc;
 	private int sp;
@@ -32,8 +36,14 @@ public final class Registers {
 	private int y;
 
 	/**
-	 * cpu status c -> carry flag, z -> zero flag, i -> interrupt disable, d -> decimal
-	 * mode flag, b -> break command, v -> overflow flag, n -> negative flag
+	 * cpu status 
+	 * c -> carry flag
+	 * z -> zero flag
+	 * i -> interrupt disable
+	 * d -> decimal mode flag
+	 * b -> break command
+	 * v -> overflow flag
+	 * n -> negative flag
 	 */
 	private boolean c;
 	private boolean z;
@@ -42,6 +52,9 @@ public final class Registers {
 	private boolean b;
 	private boolean v;
 	private boolean n;
+
+	// page crossed
+	private boolean pg;
 
 	public int getPc() {
 		return pc;
@@ -141,6 +154,14 @@ public final class Registers {
 
 	public int inc() {
 		return ++pc;
+	}
+
+	public boolean isPg() {
+		return pg;
+	}
+
+	public void setPg(boolean pg) {
+		this.pg = pg;
 	}
 
 }

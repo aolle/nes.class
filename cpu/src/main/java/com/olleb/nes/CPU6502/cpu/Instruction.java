@@ -30,7 +30,6 @@ import com.olleb.nes.CPU6502.mem.Memory;
 
 @SuppressWarnings("unused")
 public enum Instruction implements InstructionStrategy<Memory> {
-
 	/**
 	 * $ -> hex, ! -> dec, % -> binary # -> imm lower byte, / -> imm upper byte %1
 	 *
@@ -41,49 +40,43 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	 * Load/Store
 	 */
 	_A9("LDA #nn", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.IMMEDIATE.applyAsInt(r, m));
+		loadAccumulator(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
 		return 2;
 	}),
 
 	_A5("LDA nn", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		loadAccumulator(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
 		return 3;
 	}),
 
 	_B5("LDA nn,X", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		loadAccumulator(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
 		return 4;
 	}),
 
 	_AD("LDA nnnn", 3, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		loadAccumulator(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
 		return 4;
 	}),
 
 	_BD("LDA nnnn,X", 3, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
-		// TODO: optimize this.
-		final int addr = m.read(r.getPc() - 2) + (m.read(r.getPc() - 1) << 8);
-		return AddressingMode.PAGE_CROSSED.test(addr, addr + r.getX()) ? 5 : 4;
+		loadAccumulator(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
 	}),
 
 	_B9("LDA nnnn,Y", 3, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
-		// TODO: optimize this.
-		final int addr = m.read(r.getPc() - 2) + (m.read(r.getPc() - 1) << 8);
-		return AddressingMode.PAGE_CROSSED.test(addr, addr + r.getY()) ? 5 : 4;
+		loadAccumulator(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
 	}),
 
 	_A1("LDA (nn,X)", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m));
+		loadAccumulator(r, m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m));
 		return 6;
 	}),
 
 	_B1("LDA (nn),Y", 2, (var r, var m) -> {
-		loadAccumulator(r, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
-		// TODO: optimize this.
-		final int addr = m.read(r.getPc() - 2) + (m.read(r.getPc() - 1) << 8);
-		return AddressingMode.PAGE_CROSSED.test(addr, addr + r.getY()) ? 6 : 5;
+		loadAccumulator(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
+		return r.isPg() ? 6 : 5;
 	});
 
 	private final String opCode;
@@ -109,7 +102,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return size;
 	}
 
-	private static void loadAccumulator(final Registers registers, final int result) {
+	private static void loadAccumulator(final Registers registers, final Memory memory, final int address) {
+		final int result = memory.read(address);
 		registers.setA(result);
 		Flags.setFlags(registers, result);
 	}
@@ -127,32 +121,41 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	private enum AddressingMode implements ToIntBiFunction<Registers, Memory> {
 		// TODO: use RAM.Address to solve mem addresses like indexed zero page?
-		IMMEDIATE((r, m) -> m.read(r.inc())),
+		IMMEDIATE((r, m) -> r.inc()),
 
-		ZERO_PAGE((r, m) -> m.read(m.read(r.inc()))),
+		ZERO_PAGE((r, m) -> m.read(r.inc())),
 
 		// wraparound zero page => the data addr always in zero page 0x000 - 0x00FF
-		INDEXED_ZERO_PAGE_X((r, m) -> m.read(m.read(r.inc()) + r.getX() & 0x00FF)),
+		INDEXED_ZERO_PAGE_X((r, m) -> m.read(r.inc()) + r.getX() & 0x00FF),
 
 		// int 4 bytes (32 bits). Abs uses 16 bit address (2 x 8 bit).
 		// LSB -> shift 2nd (least) value 8 bits to the left and add 1st.
-		ABSOLUTE((r, m) -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8))),
+		ABSOLUTE((r, m) -> m.read(r.inc()) + (m.read(r.inc()) << 8)),
 
-		// TODO: optimize.
-		INDEXED_ABSOLUTE_X((r, m) -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getX())),
+		INDEXED_ABSOLUTE_X((r, m) -> {
+			final int i = m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getX();
+			r.setPg(AddressingMode.PAGE_CROSSED.test(i, i + r.getX()));
+			return i;
+		}),
 
-		INDEXED_ABSOLUTE_Y((r, m) -> m.read(m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getY())),
+		INDEXED_ABSOLUTE_Y((r, m) -> {
+			final int i = m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getY();
+			r.setPg(AddressingMode.PAGE_CROSSED.test(i, i + r.getY()));
+			return i;
+		}),
 
 		// wraparound zero page
 		INDEXED_INDIRECT((r, m) -> {
 			final int i = m.read(r.inc()) + r.getX();
-			return m.read(m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8));
+			return m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8);
 		}),
 
 		// wraparound zero page
 		INDIRECT_INDEXED((r, m) -> {
-			final int i = m.read(r.inc());
-			return m.read((m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8)) + r.getY());
+			int i = m.read(r.inc());
+			i = (m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8)) + r.getY();
+			r.setPg(AddressingMode.PAGE_CROSSED.test(i, i + r.getY()));
+			return i;
 		});
 
 		private final ToIntBiFunction<Registers, Memory> toIntBiFunction;
