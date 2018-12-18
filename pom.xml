@@ -13,9 +13,9 @@
 <!-- 		<module>apu</module> -->
 	</modules>
 
-	<name>nes</name>
-	<description>NES/Famicom emulator</description>
-	<url>https://github.com/aolle/nes</url>
+	<name>nes.class</name>
+	<description>NES/Famicom Emulator</description>
+	<url>https://github.com/aolle/nes.class</url>
 
 	<developers>
 		<developer>

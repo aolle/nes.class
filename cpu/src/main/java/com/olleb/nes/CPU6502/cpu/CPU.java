@@ -1,5 +1,5 @@
 /**
- * nes - NES / Famicom emulator
+ * nes.class - NES / Famicom emulator
  * 
  * Copyright (C) 2018 Àngel Ollé Blázquez
  * 

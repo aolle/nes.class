@@ -10,9 +10,9 @@
 	<artifactId>cpu</artifactId>
 	<!-- <version>1.0</version> -->
 
-	<name>nes</name>
+	<name>nes.class</name>
 	<description>NES/Famicom emulator</description>
-	<url>https://github.com/aolle/nes</url>
+	<url>https://github.com/aolle/nes.class</url>
 
 	<developers>
 		<developer>
