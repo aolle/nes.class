@@ -39,7 +39,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@Test
 	@DisplayName("Load Accumulator Indirect Indexed - B1")
 	void testB1() {
-		final String op = "_B1";
+		final int op = 0xB1;
 		final int ep = 0x0300;
 		final int addrz = 0x000A;
 		final int valueM = 0x0000;
@@ -48,7 +48,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		final int addrValue = 0x0200;
 		final int value = 0xCAFE;
 		final int cycles = 5;
-		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		final Instruction instruction = Instruction.valueOf(op);
 
 		registers.setPc(ep);
 		registers.setY(y);
@@ -58,7 +58,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		ram.write(addrValue + y, value);
 		int result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
@@ -87,7 +87,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@Test
 	@DisplayName("Load Accumulator Indexed Indirect - A1")
 	void testA1() {
-		final String op = "_A1";
+		final int op = 0xA1;
 		final int ep = 0x0300;
 		final int addrz = 0x000A;
 		final int valueM = 0x0000;
@@ -96,7 +96,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		final int addr = 0x0200;
 		final int value = 0xCAFE;
 		final int cycles = 6;
-		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		final Instruction instruction = Instruction.valueOf(op);
 
 		registers.setPc(ep);
 		registers.setX(x);
@@ -106,7 +106,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		ram.write(addr, value);
 		int result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
@@ -144,8 +144,8 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		final int xy_crossed = 0x0100;
 
 		// LDA Absolute,X
-		String op = "_BD";
-		Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		int op = 0xBD;
+		Instruction instruction = Instruction.valueOf(op);
 		int cycles = 4;
 
 		// page not crossed
@@ -156,7 +156,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		ram.write(addr + xy, value);
 		int result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
@@ -176,8 +176,8 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 
 		// LDA Absolute,Y
 		reset();
-		op = "_B9";
-		instruction = Instruction.valueOf(Instruction.class, op);
+		op = 0xB9;
+		instruction = Instruction.valueOf(op);
 		cycles = 4;
 
 		// page not crossed
@@ -188,7 +188,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		ram.write(addr + xy, value);
 		result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
@@ -228,14 +228,14 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@Test
 	@DisplayName("Load Accumulator Absolute - AD")
 	void testAD() {
-		final String op = "_AD";
+		final int op = 0xAD;
 		final int ep = 0x0300;
 		final int valueM = 0x0000;
 		final int valueL = 0x0002;
 		final int addr = 0x0200;
 		final int value = 0xCAFE;
 		final int cycles = 4;
-		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		final Instruction instruction = Instruction.valueOf(op);
 
 		registers.setPc(ep);
 		ram.write(ep + n, valueM);
@@ -243,7 +243,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 		ram.write(addr, value);
 		int result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
@@ -270,13 +270,13 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@Test
 	@DisplayName("Load Accumulator Indexed Zero Page X - B5")
 	void testB5() {
-		final String op = "_B5";
+		final int op = 0xB5;
 		final int ep = 0x0300;
 		final int X = 0x0010;
 		final int addr = 0x000A;
 		final int value = 0xCAFE;
 		final int cycles = 4;
-		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		final Instruction instruction = Instruction.valueOf(op);
 
 		registers.setPc(ep);
 		registers.setX(X);
@@ -285,7 +285,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 
 		int result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(X, registers.getX());
 		assertEquals(cycles, result);
@@ -311,12 +311,12 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@Test
 	@DisplayName("Load Accumulator Zero Page - A5")
 	void testA5() {
-		final String op = "_A5";
+		final int op = 0xA5;
 		final int ep = 0x0300;
 		final int addr = 0x000A;
 		final int value = 0xCAFE;
 		final int cycles = 3;
-		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		final Instruction instruction = Instruction.valueOf(op);
 
 		registers.setPc(ep);
 		ram.write(ep + n, addr);
@@ -324,7 +324,7 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 
 		int result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
@@ -349,18 +349,18 @@ class LDAInstructionsNoCPUTest extends InstructionsTestBase {
 	@Test
 	@DisplayName("Load Accumulator Immediate - A9")
 	void testA9() {
-		final String op = "_A9";
+		final int op = 0x0A9;
 		final int ep = 0x0300;
 		final int value = 0x000A;
 		final int cycles = 2;
-		final Instruction instruction = Instruction.valueOf(Instruction.class, op);
+		final Instruction instruction = Instruction.valueOf(op);
 
 		registers.setPc(ep);
 		ram.write(ep + n, value);
 
 		int result = instruction.exec(registers, ram);
 
-		assertEquals(op, instruction.toString());
+		assertEquals(op, instruction.getOpCode());
 		assertEquals(ep + instruction.getSize() - n, registers.getPc());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());

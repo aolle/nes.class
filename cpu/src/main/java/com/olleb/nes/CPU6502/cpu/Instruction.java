@@ -19,10 +19,10 @@
 
 package com.olleb.nes.CPU6502.cpu;
 
-import java.util.function.BiFunction;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiPredicate;
-import java.util.function.IntBinaryOperator;
-import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
 import java.util.function.ToIntBiFunction;
 
@@ -39,53 +39,63 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	/**
 	 * Load/Store
 	 */
-	_A9("LDA #nn", 2, (var r, var m) -> {
+	_A9(0xA9, "LDA #nn", 2, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
 		return 2;
 	}),
 
-	_A5("LDA nn", 2, (var r, var m) -> {
+	_A5(0xA5, "LDA nn", 2, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
 		return 3;
 	}),
 
-	_B5("LDA nn,X", 2, (var r, var m) -> {
+	_B5(0xB5, "LDA nn,X", 2, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
 		return 4;
 	}),
 
-	_AD("LDA nnnn", 3, (var r, var m) -> {
+	_AD(0xAD, "LDA nnnn", 3, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
 		return 4;
 	}),
 
-	_BD("LDA nnnn,X", 3, (var r, var m) -> {
+	_BD(0xBD, "LDA nnnn,X", 3, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
 		return r.isPg() ? 5 : 4;
 	}),
 
-	_B9("LDA nnnn,Y", 3, (var r, var m) -> {
+	_B9(0xB9, "LDA nnnn,Y", 3, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
 		return r.isPg() ? 5 : 4;
 	}),
 
-	_A1("LDA (nn,X)", 2, (var r, var m) -> {
+	_A1(0xA1, "LDA (nn,X)", 2, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m));
 		return 6;
 	}),
 
-	_B1("LDA (nn),Y", 2, (var r, var m) -> {
+	_B1(0xB1, "LDA (nn),Y", 2, (var r, var m) -> {
 		loadAccumulator(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
 		return r.isPg() ? 6 : 5;
 	});
 
-	private final String opCode;
+	private static final Instruction[] instructions = new Instruction[256];
+
+	static {
+		Arrays.stream(Instruction.values())
+				.forEach(i -> instructions[Integer.parseInt(i.toString().replace("_", ""), 16)] = i);
+	}
+
+	private final int opCode;
+	private final String assemblerFormat;
 	private final int size;
 	private final InstructionStrategy<Memory> instructionStrategy;
 
-	Instruction(final String opCode, final int size, final InstructionStrategy<Memory> instructionStrategy) {
+	private Instruction(final int opCode, final String assemblerFormat, final int size,
+			final InstructionStrategy<Memory> instructionStrategy) {
 		this.opCode = opCode;
 		this.size = size;
+		this.assemblerFormat = assemblerFormat;
 		this.instructionStrategy = instructionStrategy;
 	}
 
@@ -94,12 +104,21 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return instructionStrategy.exec(r, m);
 	}
 
-	public String getOpCode() {
-		return opCode;
+	public String getAssemblerFormat() {
+		return assemblerFormat;
 	}
 
 	public int getSize() {
 		return size;
+	}
+	
+	public int getOpCode() {
+		return opCode;
+	}
+
+	public static Instruction valueOf(int opcode) {
+		return instructions[opcode];
+
 	}
 
 	private static void loadAccumulator(final Registers registers, final Memory memory, final int address) {
@@ -166,6 +185,7 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 		// same page => high-byte of addresses have the same value
 		// example: 0xFE00 - 0xFEFF, different page: 0xFE00 - 0xFF00
+		// TODO: JMH >> vs &. (addr1 & 0xFF00) != (addr2 & 0xFF00);
 		private static final BiPredicate<Integer, Integer> PAGE_CROSSED = (x, y) -> (x >> 8 != y >> 8);
 
 		@Override

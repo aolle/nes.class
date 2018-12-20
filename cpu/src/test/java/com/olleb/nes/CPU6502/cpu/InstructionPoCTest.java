@@ -1,5 +1,5 @@
 /**
- * nes.class - NES / Famicom Emulator
+ * nes.class - NES / Famicom emulator
  * 
  * Copyright (c) 2018 Àngel Ollé Blázquez
  * 
@@ -17,12 +17,24 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.olleb.nes.CPU6502.mem;
-// TODO modularize
-public interface Memory {
+package com.olleb.nes.CPU6502.cpu;
 
-	public int read(int address);
+import java.util.Arrays;
 
-	public void write(int address, int value);
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+
+@DisplayName("PoC")
+@TestInstance(Lifecycle.PER_CLASS)
+class InstructionPoCTest extends InstructionsTestBase {
+
+
+	@Test
+	@DisplayName("")
+	void test() {
+		System.out.println(Arrays.toString(Instruction.values()));
+	}
 
 }

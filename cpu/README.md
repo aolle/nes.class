@@ -3,6 +3,15 @@ NES / Famicom emulator
 
 -Project in development-
 
+## Resources  
+* [AtariAge](http://atariage.com)  
+* [C64-Wiki](https://www.c64-wiki.com)  
+* [Obelisk](http://www.obelisk.me.uk/)  
+* [Nesdev forums](https://forums.nesdev.com)  
+* [Nesdev Wiki](http://wiki.nesdev.com)  
+* [Nintendo Entertainment System Documentation](http://www.nesdev.com/NESDoc.pdf)  
+   
+
 
 ## License
 

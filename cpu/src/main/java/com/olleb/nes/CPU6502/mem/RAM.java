@@ -55,7 +55,7 @@ public final class RAM implements Memory {
 		if (address <= Address.RAM_MIRROR_END.value) {
 			return mem[address & Address.RAM_END.value];
 		}
-		return -1;
+		return mem[address];
 	}
 
 	@Override
@@ -63,7 +63,8 @@ public final class RAM implements Memory {
 		// write mirrors optimized. Write only once.
 		if (address <= Address.RAM_MIRROR_END.value) {
 			mem[address & Address.RAM_END.value] = value;
-		}
+		} else
+			mem[address] = value;
 	}
 
 	public int getSize() {
