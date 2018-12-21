@@ -29,9 +29,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.olleb.nes.CPU6502.cpu.Instruction;
 
-@DisplayName("LDA Instructions Test. No CPU.")
+@DisplayName("Load Instructions Test. No CPU.")
 @TestInstance(Lifecycle.PER_CLASS)
-class LDAInstructionsNoCPUTest extends InstructionsTestBase {
+class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 
 	// no CPU Address Adjustment
 	private final int n = 1;

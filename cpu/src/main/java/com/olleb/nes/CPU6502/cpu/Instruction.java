@@ -20,64 +20,106 @@
 package com.olleb.nes.CPU6502.cpu;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.IntPredicate;
 import java.util.function.ToIntBiFunction;
 
 import com.olleb.nes.CPU6502.mem.Memory;
 
-@SuppressWarnings("unused")
 public enum Instruction implements InstructionStrategy<Memory> {
-	/**
-	 * $ -> hex, ! -> dec, % -> binary # -> imm lower byte, / -> imm upper byte %1
-	 *
-	 * format: opcode("name", bytes, registers) => cycles
-	 */
-
-	/**
-	 * Load/Store
-	 */
+	// Load
 	_A9(0xA9, "LDA #nn", 2, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
+		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setA);
 		return 2;
 	}),
 
 	_A5(0xA5, "LDA nn", 2, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		load(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), Registers::setA);
 		return 3;
 	}),
 
 	_B5(0xB5, "LDA nn,X", 2, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		load(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m), Registers::setA);
 		return 4;
 	}),
 
 	_AD(0xAD, "LDA nnnn", 3, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		load(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m), Registers::setA);
 		return 4;
 	}),
 
 	_BD(0xBD, "LDA nnnn,X", 3, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		load(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m), Registers::setA);
 		return r.isPg() ? 5 : 4;
 	}),
 
 	_B9(0xB9, "LDA nnnn,Y", 3, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
+		load(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m), Registers::setA);
 		return r.isPg() ? 5 : 4;
 	}),
 
 	_A1(0xA1, "LDA (nn,X)", 2, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m));
+		load(r, m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m), Registers::setA);
 		return 6;
 	}),
 
 	_B1(0xB1, "LDA (nn),Y", 2, (var r, var m) -> {
-		loadAccumulator(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
+		load(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m), Registers::setA);
 		return r.isPg() ? 6 : 5;
-	});
+	}),
+
+	_A2(0xA2, "LDX #nn", 2, (var r, var m) -> {
+		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setX);
+		return 2;
+	}),
+
+	_A6(0xA6, "LDX nn", 2, (var r, var m) -> {
+		load(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), Registers::setX);
+		return 3;
+	}),
+
+	_B6(0xB6, "LDX nn,Y", 2, (var r, var m) -> {
+		load(r, m, AddressingMode.INDEXED_ZERO_PAGE_Y.applyAsInt(r, m), Registers::setX);
+		return 4;
+	}),
+
+	_AE(0xAE, "LDX nnnn", 3, (var r, var m) -> {
+		load(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m), Registers::setX);
+		return 4;
+	}),
+
+	_BE(0xBE, "LDX nnnn,Y", 3, (var r, var m) -> {
+		load(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m), Registers::setX);
+		return r.isPg() ? 5 : 4;
+	}),
+	
+	_A0(0xA0,"LDY #nn",2,(var r, var m) -> {
+		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setY);
+		return 2;
+	}),
+	
+	_A4(0xA4, "LDY nn", 2, (var r, var m) -> {
+		load(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), Registers::setY);
+		return 3;
+	}),
+	
+	_B4(0xB4, "LDY nn,X", 2, (var r, var m) -> {
+		load(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m), Registers::setY);
+		return 4;
+	}),
+
+	_AC(0xAC, "LDY nnnn", 3, (var r, var m) -> {
+		load(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m), Registers::setY);
+		return 4;
+	}),
+	
+	_BC(0xBC, "LDY nnnn,X", 3, (var r, var m) -> {
+		load(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m), Registers::setY);
+		return r.isPg() ? 5 : 4;
+	})
+	
+	;
 
 	private static final Instruction[] instructions = new Instruction[256];
 
@@ -111,19 +153,19 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	public int getSize() {
 		return size;
 	}
-	
+
 	public int getOpCode() {
 		return opCode;
 	}
 
 	public static Instruction valueOf(int opcode) {
 		return instructions[opcode];
-
 	}
 
-	private static void loadAccumulator(final Registers registers, final Memory memory, final int address) {
+	private static void load(final Registers registers, final Memory memory, final int address,
+			BiConsumer<Registers, Integer> biConsumer) {
 		final int result = memory.read(address);
-		registers.setA(result);
+		biConsumer.accept(registers, result);
 		Flags.setFlags(registers, result);
 	}
 
@@ -146,6 +188,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 		// wraparound zero page => the data addr always in zero page 0x000 - 0x00FF
 		INDEXED_ZERO_PAGE_X((r, m) -> m.read(r.inc()) + r.getX() & 0x00FF),
+
+		INDEXED_ZERO_PAGE_Y((r, m) -> m.read(r.inc()) + r.getY() & 0x00FF),
 
 		// int 4 bytes (32 bits). Abs uses 16 bit address (2 x 8 bit).
 		// LSB -> shift 2nd (least) value 8 bits to the left and add 1st.
