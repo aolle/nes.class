@@ -28,7 +28,7 @@ import java.util.function.ToIntBiFunction;
 import com.olleb.nes.CPU6502.mem.Memory;
 
 public enum Instruction implements InstructionStrategy<Memory> {
-	// Load
+	// load
 	_A9(0xA9, "LDA #nn", 2, (var r, var m) -> {
 		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setA);
 		return 2;
@@ -93,17 +93,17 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		load(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m), Registers::setX);
 		return r.isPg() ? 5 : 4;
 	}),
-	
-	_A0(0xA0,"LDY #nn",2,(var r, var m) -> {
+
+	_A0(0xA0, "LDY #nn", 2, (var r, var m) -> {
 		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setY);
 		return 2;
 	}),
-	
+
 	_A4(0xA4, "LDY nn", 2, (var r, var m) -> {
 		load(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), Registers::setY);
 		return 3;
 	}),
-	
+
 	_B4(0xB4, "LDY nn,X", 2, (var r, var m) -> {
 		load(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m), Registers::setY);
 		return 4;
@@ -113,12 +113,99 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		load(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m), Registers::setY);
 		return 4;
 	}),
-	
+
 	_BC(0xBC, "LDY nnnn,X", 3, (var r, var m) -> {
 		load(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m), Registers::setY);
 		return r.isPg() ? 5 : 4;
+	}),
+
+	// store
+	_85(0x85, "STA nn", 2, (var r, var m) -> {
+		store(m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), r.getA());
+		return 3;
+	}),
+
+	_95(0x95, "STA nn,X", 2, (var r, var m) -> {
+		store(m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m), r.getA());
+		return 4;
+	}),
+
+	_8D(0x8D, "STA nnnn", 3, (var r, var m) -> {
+		store(m, AddressingMode.ABSOLUTE.applyAsInt(r, m), r.getA());
+		return 4;
+	}),
+
+	_9D(0x9D, "STA nnnn,X", 3, (var r, var m) -> {
+		store(m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m), r.getA());
+		return 5;
+	}),
+
+	_99(0x99, "STA nnnn,Y", 3, (var r, var m) -> {
+		store(m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m), r.getA());
+		return 5;
+	}),
+
+	_81(0x81, "STA (nn,X)", 2, (var r, var m) -> {
+		store(m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m), r.getA());
+		return 6;
+	}),
+
+	_91(0x91, "STA (nn),Y", 2, (var r, var m) -> {
+		store(m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m), r.getA());
+		return 6;
+	}),
+
+	_86(0x86, "STX nn", 2, (var r, var m) -> {
+		store(m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), r.getX());
+		return 3;
+	}),
+
+	_96(0x96, "STX nn,Y", 2, (var r, var m) -> {
+		store(m, AddressingMode.INDEXED_ZERO_PAGE_Y.applyAsInt(r, m), r.getX());
+		return 4;
+	}),
+
+	_8E(0x8E, "STX nnnn", 3, (var r, var m) -> {
+		store(m, AddressingMode.ABSOLUTE.applyAsInt(r, m), r.getX());
+		return 4;
+	}),
+
+	_84(0x84, "STY nn", 2, (var r, var m) -> {
+		store(m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), r.getY());
+		return 3;
+	}),
+
+	_94(0x94, "STY nn,X", 2, (var r, var m) -> {
+		store(m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m), r.getY());
+		return 4;
+	}),
+
+	_8C(0x8C, "STY nnnn", 3, (var r, var m) -> {
+		store(m, AddressingMode.ABSOLUTE.applyAsInt(r, m), r.getY());
+		return 4;
+	}),
+
+	// register transfers
+	_AA(0xAA, "TAX", 1, (var r, var m) -> {
+		transfer(r, Registers::setX, r.getA());
+		return 2;
+	}),
+
+	_A8(0xA8, "TAY", 1, (var r, var m) -> {
+		transfer(r, Registers::setY, r.getA());
+		return 2;
+	}),
+
+	_8A(0x8A, "TXA", 1, (var r, var m) -> {
+		transfer(r, Registers::setA, r.getX());
+		return 2;
+	}),
+
+	_98(0x98, "TYA", 1, (var r, var m) -> {
+		transfer(r, Registers::setA, r.getY());
+		return 2;
 	})
-	
+
 	;
 
 	private static final Instruction[] instructions = new Instruction[256];
@@ -162,11 +249,22 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return instructions[opcode];
 	}
 
+	// TODO review args order
 	private static void load(final Registers registers, final Memory memory, final int address,
-			BiConsumer<Registers, Integer> biConsumer) {
+			BiConsumer<Registers, Integer> destination) {
 		final int result = memory.read(address);
-		biConsumer.accept(registers, result);
+		destination.accept(registers, result);
 		Flags.setFlags(registers, result);
+	}
+
+	private static void store(final Memory memory, final int address, final int value) {
+		memory.write(address, value);
+	}
+
+	private static void transfer(final Registers registers, final BiConsumer<Registers, Integer> destination,
+			final int value) {
+		destination.accept(registers, value);
+		Flags.setFlags(registers, value);
 	}
 
 	private static class Flags {
