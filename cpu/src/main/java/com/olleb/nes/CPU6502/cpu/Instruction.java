@@ -239,6 +239,137 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	_28(0x28, "PLP", 1, (var r, var m) -> {
 		r.setProcessorStatus(stackPull(r, m));
 		return 4;
+	}),
+
+	// logical
+	_29(0x29, "AND #nn", 2, (var r, var m) -> {
+		and(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
+		return 2;
+	}),
+
+	_25(0x25, "AND nn", 2, (var r, var m) -> {
+		and(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 3;
+	}),
+
+	_35(0x35, "AND nn,X", 2, (var r, var m) -> {
+		and(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 4;
+	}),
+
+	_2D(0x2D, "AND nnnn", 3, (var r, var m) -> {
+		and(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 4;
+	}),
+
+	_3D(0x3D, "AND nnnn,X", 3, (var r, var m) -> {
+		and(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
+	}),
+
+	_39(0x39, "AND nnnn,Y", 3, (var r, var m) -> {
+		and(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
+	}),
+
+	_21(0x21, "AND (nn,X)", 2, (var r, var m) -> {
+		and(r, m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_31(0x31, "AND (nn),Y", 2, (var r, var m) -> {
+		and(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
+		return r.isPg() ? 6 : 5;
+	}),
+
+	_49(0x49, "EOR #nn", 2, (var r, var m) -> {
+		xor(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
+		return 2;
+	}),
+
+	_45(0x45, "EOR nn", 2, (var r, var m) -> {
+		xor(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 3;
+	}),
+
+	_55(0x55, "EOR nn,X", 2, (var r, var m) -> {
+		xor(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 4;
+	}),
+
+	_4D(0x4D, "EOR nnnn", 3, (var r, var m) -> {
+		xor(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 4;
+	}),
+
+	_5D(0x5D, "EOR nnnn,X", 3, (var r, var m) -> {
+		xor(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
+	}),
+
+	_59(0x59, "EOR nnnn,Y", 3, (var r, var m) -> {
+		xor(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
+	}),
+
+	_41(0x41, "EOR (nn,X)", 2, (var r, var m) -> {
+		xor(r, m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_51(0x51, "EOR (nn),Y", 2, (var r, var m) -> {
+		xor(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
+		return r.isPg() ? 6 : 5;
+	}),
+
+	_09(0x09, "ORA #nn", 2, (var r, var m) -> {
+		or(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
+		return 2;
+	}),
+
+	_05(0x05, "ORA nn", 2, (var r, var m) -> {
+		or(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 3;
+	}),
+
+	_15(0x15, "ORA nn,X", 2, (var r, var m) -> {
+		or(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 4;
+	}),
+
+	_0D(0x0D, "ORA nnnn", 3, (var r, var m) -> {
+		or(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 4;
+	}),
+
+	_1D(0x1D, "ORA nnnn,X", 3, (var r, var m) -> {
+		or(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
+	}),
+
+	_19(0x19, "ORA nnnn,Y", 3, (var r, var m) -> {
+		or(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m));
+		return r.isPg() ? 5 : 4;
+	}),
+
+	_01(0x01, "ORA (nn,X)", 2, (var r, var m) -> {
+		or(r, m, AddressingMode.INDEXED_INDIRECT.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_11(0x11, "ORA (nn),Y", 2, (var r, var m) -> {
+		or(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
+		return r.isPg() ? 6 : 5;
+	}),
+
+	_24(0x24, "BIT nn", 2, (var r, var m) -> {
+		test(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 3;
+	}),
+
+	_2C(0x2C, "BIT nnnn", 3, (var r, var m) -> {
+		test(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 4;
 	})
 
 	;
@@ -289,7 +420,7 @@ public enum Instruction implements InstructionStrategy<Memory> {
 			BiConsumer<Registers, Integer> destination) {
 		final int result = memory.read(address);
 		destination.accept(registers, result);
-		Flags.setFlags(registers, result);
+		Flags.setFlags(registers, result, 'n', 'z');
 	}
 
 	private static void store(final Memory memory, final int address, final int value) {
@@ -299,14 +430,14 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	private static void transfer(final Registers registers, final int value,
 			final BiConsumer<Registers, Integer> destination) {
 		destination.accept(registers, value);
-		Flags.setFlags(registers, value);
+		Flags.setFlags(registers, value, 'n', 'z');
 	}
 
 	// TODO refactor
 	private static void stackPointerTransfer(final Registers registers, final int value,
 			final BiConsumer<Registers, Integer> destination) {
 		destination.accept(registers, value);
-		Flags.setFlags(registers, value);
+		Flags.setFlags(registers, value, 'n', 'z');
 	}
 
 	private static void stackPush(final Registers registers, final Memory memory, final int value) {
@@ -320,14 +451,61 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return value;
 	}
 
+	private static void and(final Registers registers, final Memory memory, final int address) {
+		final int value = registers.getA() & memory.read(address);
+		registers.setA(value);
+		Flags.setFlags(registers, value, 'n', 'z');
+	}
+
+	private static void xor(final Registers registers, final Memory memory, final int address) {
+		final int value = registers.getA() ^ memory.read(address);
+		registers.setA(value);
+		Flags.setFlags(registers, value, 'n', 'z');
+	}
+
+	private static void or(final Registers registers, final Memory memory, final int address) {
+		final int value = registers.getA() | memory.read(address);
+		registers.setA(value);
+		Flags.setFlags(registers, value, 'n', 'z');
+	}
+
+	private static void test(final Registers registers, final Memory memory, final int address) {
+		final int value = memory.read(address);
+		Flags.setFlags(registers, registers.getA() & value, 'z');
+		Flags.setFlags(registers, value, 'v', 'n');
+	}
+
 	private static class Flags {
 		private static final IntPredicate ZERO = x -> (x == 0);
 		// MSB 2^7 = 0x0080
 		private static final IntPredicate NEGATIVE = x -> ((x & 0x0080) != 0);
+		// MSB 2^6 = 0x0040
+		private static final IntPredicate OVERFLOW = x -> ((x & 0x0040) != 0);
 
-		public static final void setFlags(final Registers registers, final int value) {
-			registers.setZ(Flags.ZERO.test(value));
-			registers.setN(Flags.NEGATIVE.test(value));
+		public static final void setFlags(final Registers registers, final int value, char... flags) {
+			for (char c : flags) {
+				switch (c) {
+				case 'c':
+					break;
+				case 'z':
+					registers.setZ(Flags.ZERO.test(value));
+					break;
+				case 'i':
+					break;
+				case 'd':
+					break;
+				case 'b':
+					break;
+				case 'v':
+					registers.setN(Flags.OVERFLOW.test(value));
+					break;
+				case 'n':
+					registers.setN(Flags.NEGATIVE.test(value));
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 

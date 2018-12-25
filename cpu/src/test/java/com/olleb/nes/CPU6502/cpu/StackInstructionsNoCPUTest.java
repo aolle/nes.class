@@ -34,7 +34,7 @@ class StackInstructionsNoCPUTest extends InstructionsTestBase {
 
 	@Test
 	@DisplayName("Processor status")
-	void teststatus() {
+	void testStatus() {
 		registers.setC(true);
 		registers.setZ(false);
 		registers.setI(false);
