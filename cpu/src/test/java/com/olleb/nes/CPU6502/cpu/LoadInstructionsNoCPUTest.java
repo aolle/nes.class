@@ -50,7 +50,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		final int cycles = 5;
 		final Instruction instruction = Instruction.valueOf(op);
 
-		registers.setPc(ep);
+		registers.setPC(ep);
 		registers.setY(y);
 		ram.write(ep + n, addrz);
 		ram.write(addrz, valueM);
@@ -59,12 +59,12 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addrz);
 		ram.write(addrz, valueM);
 		ram.write(addrz + 1, valueL);
@@ -74,7 +74,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addrz);
 		ram.write(addrz, valueM);
 		ram.write(addrz + 1, valueL);
@@ -98,7 +98,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		final int cycles = 6;
 		final Instruction instruction = Instruction.valueOf(op);
 
-		registers.setPc(ep);
+		registers.setPC(ep);
 		registers.setX(x);
 		ram.write(ep + n, addrz);
 		ram.write(addrz + x, valueM);
@@ -107,12 +107,12 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addrz);
 		ram.write(addrz + x, valueM);
 		ram.write(addrz + x + 1, valueL);
@@ -122,7 +122,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addrz);
 		ram.write(addrz + x, valueM);
 		ram.write(addrz + x + 1, valueL);
@@ -149,7 +149,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		int cycles = 4;
 
 		// page not crossed
-		registers.setPc(ep);
+		registers.setPC(ep);
 		registers.setX(xy);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
@@ -157,14 +157,14 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// page crossed
 		reset();
 		cycles = 5;
-		registers.setPc(ep);
+		registers.setPC(ep);
 		registers.setX(xy_crossed);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
@@ -181,7 +181,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		cycles = 4;
 
 		// page not crossed
-		registers.setPc(ep);
+		registers.setPC(ep);
 		registers.setY(xy);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
@@ -189,14 +189,14 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// page crossed
 		reset();
 		cycles = 5;
-		registers.setPc(ep);
+		registers.setPC(ep);
 		registers.setY(xy_crossed);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
@@ -207,7 +207,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
 		ram.write(addr + xy_crossed, 0);
@@ -216,7 +216,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
 		ram.write(addr + xy_crossed, 0x0080);
@@ -237,19 +237,19 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		final int cycles = 4;
 		final Instruction instruction = Instruction.valueOf(op);
 
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
 		ram.write(addr, value);
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
 		ram.write(addr, 0);
@@ -258,7 +258,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, valueM);
 		ram.write(ep + n + 1, valueL);
 		ram.write(addr, 0x0080);
@@ -278,7 +278,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		final int cycles = 4;
 		final Instruction instruction = Instruction.valueOf(op);
 
-		registers.setPc(ep);
+		registers.setPC(ep);
 		registers.setX(X);
 		ram.write(ep + n, addr);
 		ram.write(addr + X, value);
@@ -286,13 +286,13 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(X, registers.getX());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addr);
 		ram.write(addr + X, 0);
 		instruction.exec(registers, ram);
@@ -300,7 +300,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addr);
 		ram.write(addr + X, 0x0080);
 		instruction.exec(registers, ram);
@@ -318,19 +318,19 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		final int cycles = 3;
 		final Instruction instruction = Instruction.valueOf(op);
 
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addr);
 		ram.write(addr, value);
 
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addr);
 		ram.write(addr, 0x0000);
 		instruction.exec(registers, ram);
@@ -338,7 +338,7 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, addr);
 		ram.write(addr, 0x0080);
 		instruction.exec(registers, ram);
@@ -355,25 +355,25 @@ class LoadInstructionsNoCPUTest extends InstructionsTestBase {
 		final int cycles = 2;
 		final Instruction instruction = Instruction.valueOf(op);
 
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, value);
 
 		int result = instruction.exec(registers, ram);
 
 		assertEquals(op, instruction.getOpCode());
-		assertEquals(ep + instruction.getSize() - n, registers.getPc());
+		assertEquals(ep + instruction.getSize() - n, registers.getPC());
 		assertEquals(cycles, result);
 		assertEquals(value, registers.getA());
 
 		// zero flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, 0x0000);
 		instruction.exec(registers, ram);
 		assertEquals(0, registers.getA());
 		assertTrue(registers.isZ());
 
 		// negative flag
-		registers.setPc(ep);
+		registers.setPC(ep);
 		ram.write(ep + n, 0x0080);
 		instruction.exec(registers, ram);
 		assertTrue(registers.isN());

@@ -27,33 +27,37 @@ public final class RAM implements Memory {
 	// Stack: 0x0100 - 0x01FF
 	// RAM: 0x0200 - 0x0800
 	// Mirrors 0x0000:0x07FF => 0x0800 - 0x1FFF
-	private final int mem[] = new int[Address.RAM_END.value + 1];
+	private final int mem[] = new int[Address.END.value + 1];
 
-	private enum Address {
-		RAM_TOTAL_BEGIN(0x0000),
-		RAM_BEGIN(0x0200),
-		RAM_END(0x07FF),
-		RAM_MIRROR_BEGIN(0x0800),
-		RAM_MIRROR_END(0x1FFF),
-		RAM_TOTAL_END(0x1FFF),
-		RESET_VECTOR_0_(0xFFFC),
-		RESET_VECTOR_1_(0xFFFD),
-		RAM_ZERO_PAGE_BEGIN(0x0000),
-		RAM_ZERO_PAGE_END(0x00FF),
-		RAM_STACK_BEGIN(0x0100),
-		RAM_STACK_END(0x01FF);
+	public enum Address {
+		TOTAL_BEGIN(0x0000),
+		BEGIN(0x0200),
+		END(0x07FF),
+		MIRROR_BEGIN(0x0800),
+		MIRROR_END(0x1FFF),
+		TOTAL_END(0x1FFF),
+		VECTOR_0_(0xFFFC),
+		VECTOR_1_(0xFFFD),
+		ZERO_PAGE_BEGIN(0x0000),
+		ZERO_PAGE_END(0x00FF),
+		STACK_BEGIN(0x0100),
+		STACK_END(0x01FF);
 		
 		private final int value;
 
 		private Address(final int address) {
 			this.value = address;
 		}
+		
+		public int getAddress() {
+			return value;
+		}
 	}
 
 	@Override
 	public int read(final int address) {
-		if (address <= Address.RAM_MIRROR_END.value) {
-			return mem[address & Address.RAM_END.value];
+		if (address <= Address.MIRROR_END.value) {
+			return mem[address & Address.END.value];
 		}
 		return mem[address];
 	}
@@ -61,8 +65,8 @@ public final class RAM implements Memory {
 	@Override
 	public void write(final int address, final int value) {
 		// write mirrors optimized. Write only once.
-		if (address <= Address.RAM_MIRROR_END.value) {
-			mem[address & Address.RAM_END.value] = value;
+		if (address <= Address.MIRROR_END.value) {
+			mem[address & Address.END.value] = value;
 		} else
 			mem[address] = value;
 	}

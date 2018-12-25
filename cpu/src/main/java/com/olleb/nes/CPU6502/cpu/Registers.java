@@ -56,20 +56,21 @@ public final class Registers {
 	// page crossed
 	private boolean pg;
 
-	public int getPc() {
+	public int getPC() {
 		return pc;
 	}
 
-	public void setPc(int pc) {
+	public void setPC(int pc) {
 		this.pc = pc;
 	}
 
-	public int getSp() {
+	public int getSP() {
 		return sp;
 	}
 
-	public void setSp(int sp) {
+	public void setSP(int sp) {
 		this.sp = sp;
+		wrapSP();
 	}
 
 	public int getA() {
@@ -152,10 +153,27 @@ public final class Registers {
 		this.n = n;
 	}
 
-	public int inc() {
+	public int incrementPC() {
 		return ++pc;
 	}
+	
+	public int incrementSP() {
+		sp++;
+		wrapSP();
+		return sp;
+	}
 
+	public int decrementSP() {
+		sp--;
+		wrapSP();
+		return sp;
+	}
+	
+	// waparound 8 bit register. SP 0x00 - 0xFF. Serves as an offset from 0x0100.
+	private void wrapSP() {
+		sp &= 0xFF;
+	}
+	
 	public boolean isPg() {
 		return pg;
 	}
@@ -163,5 +181,23 @@ public final class Registers {
 	public void setPg(boolean pg) {
 		this.pg = pg;
 	}
-
+	
+	public int getProcessorStatus() {
+		int r = 0;
+		for (boolean b : new boolean[] { c, z, i, d, b, v, n }) {
+			r = (r << 1) + (b ? 1 : 0);
+		}
+		return r;
+	}
+	
+	public void setProcessorStatus(final int status) {
+		c = ((status >> 6) & 1) == 1 ? true : false;
+		z = ((status >> 5) & 1) == 1 ? true : false;
+		i = ((status >> 4) & 1) == 1 ? true : false;
+		d = ((status >> 3) & 1) == 1 ? true : false;
+		b = ((status >> 2) & 1) == 1 ? true : false;
+		v = ((status >> 1) & 1) == 1 ? true : false;
+		n = ((status >> 0) & 1) == 1 ? true : false;
+	}
+	
 }

@@ -22,10 +22,14 @@ package com.olleb.nes.CPU6502.cpu;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
 import java.util.function.ToIntBiFunction;
 
 import com.olleb.nes.CPU6502.mem.Memory;
+import com.olleb.nes.CPU6502.mem.RAM.Address;
+
+import static com.olleb.nes.CPU6502.mem.RAM.Address.*;
 
 public enum Instruction implements InstructionStrategy<Memory> {
 	// load
@@ -187,23 +191,54 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	// register transfers
 	_AA(0xAA, "TAX", 1, (var r, var m) -> {
-		transfer(r, Registers::setX, r.getA());
+		transfer(r, r.getA(), Registers::setX);
 		return 2;
 	}),
 
 	_A8(0xA8, "TAY", 1, (var r, var m) -> {
-		transfer(r, Registers::setY, r.getA());
+		transfer(r, r.getA(), Registers::setY);
 		return 2;
 	}),
 
 	_8A(0x8A, "TXA", 1, (var r, var m) -> {
-		transfer(r, Registers::setA, r.getX());
+		transfer(r, r.getX(), Registers::setA);
 		return 2;
 	}),
 
 	_98(0x98, "TYA", 1, (var r, var m) -> {
-		transfer(r, Registers::setA, r.getY());
+		transfer(r, r.getY(), Registers::setA);
 		return 2;
+	}),
+
+	// stack
+	_BA(0xBA, "TSX", 1, (var r, var m) -> {
+		stackPointerTransfer(r, r.getSP(), Registers::setX);
+		return 2;
+	}),
+
+	_9A(0x9A, "TXS", 1, (var r, var m) -> {
+		stackPointerTransfer(r, r.getX(), Registers::setSP);
+		return 2;
+	}),
+
+	_48(0x48, "PHA", 1, (var r, var m) -> {
+		stackPush(r, m, r.getA());
+		return 3;
+	}),
+
+	_08(0x08, "PHP", 1, (var r, var m) -> {
+		stackPush(r, m, r.getProcessorStatus());
+		return 3;
+	}),
+
+	_68(0x68, "PLA", 1, (var r, var m) -> {
+		r.setA(stackPull(r, m));
+		return 4;
+	}),
+
+	_28(0x28, "PLP", 1, (var r, var m) -> {
+		r.setProcessorStatus(stackPull(r, m));
+		return 4;
 	})
 
 	;
@@ -245,7 +280,7 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return opCode;
 	}
 
-	public static Instruction valueOf(int opcode) {
+	public static Instruction valueOf(final int opcode) {
 		return instructions[opcode];
 	}
 
@@ -261,10 +296,28 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		memory.write(address, value);
 	}
 
-	private static void transfer(final Registers registers, final BiConsumer<Registers, Integer> destination,
-			final int value) {
+	private static void transfer(final Registers registers, final int value,
+			final BiConsumer<Registers, Integer> destination) {
 		destination.accept(registers, value);
 		Flags.setFlags(registers, value);
+	}
+
+	// TODO refactor
+	private static void stackPointerTransfer(final Registers registers, final int value,
+			final BiConsumer<Registers, Integer> destination) {
+		destination.accept(registers, value);
+		Flags.setFlags(registers, value);
+	}
+
+	private static void stackPush(final Registers registers, final Memory memory, final int value) {
+		memory.write(Address.STACK_BEGIN.getAddress() + registers.getSP(), value);
+		registers.decrementSP();
+	}
+
+	private static int stackPull(final Registers registers, final Memory memory) {
+		final int value = memory.read(Address.STACK_BEGIN.getAddress() + registers.getSP());
+		registers.incrementPC();
+		return value;
 	}
 
 	private static class Flags {
@@ -278,43 +331,45 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		}
 	}
 
+	// TODO: DECOUPLE
 	private enum AddressingMode implements ToIntBiFunction<Registers, Memory> {
 		// TODO: use RAM.Address to solve mem addresses like indexed zero page?
-		IMMEDIATE((r, m) -> r.inc()),
+		IMMEDIATE((r, m) -> r.incrementPC()),
 
-		ZERO_PAGE((r, m) -> m.read(r.inc())),
+		ZERO_PAGE((r, m) -> m.read(r.incrementPC())),
 
 		// wraparound zero page => the data addr always in zero page 0x000 - 0x00FF
-		INDEXED_ZERO_PAGE_X((r, m) -> m.read(r.inc()) + r.getX() & 0x00FF),
+		INDEXED_ZERO_PAGE_X((r, m) -> m.read(r.incrementPC()) + AddressingMode.WRAP_AROUND_ZERO_PAGE.apply(r.getX())),
 
-		INDEXED_ZERO_PAGE_Y((r, m) -> m.read(r.inc()) + r.getY() & 0x00FF),
+		INDEXED_ZERO_PAGE_Y((r, m) -> m.read(r.incrementPC()) + AddressingMode.WRAP_AROUND_ZERO_PAGE.apply(r.getY())),
 
 		// int 4 bytes (32 bits). Abs uses 16 bit address (2 x 8 bit).
 		// LSB -> shift 2nd (least) value 8 bits to the left and add 1st.
-		ABSOLUTE((r, m) -> m.read(r.inc()) + (m.read(r.inc()) << 8)),
+		ABSOLUTE((r, m) -> m.read(r.incrementPC()) + (m.read(r.incrementPC()) << 8)),
 
 		INDEXED_ABSOLUTE_X((r, m) -> {
-			final int i = m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getX();
+			final int i = m.read(r.incrementPC()) + (m.read(r.incrementPC()) << 8) + r.getX();
 			r.setPg(AddressingMode.PAGE_CROSSED.test(i, i + r.getX()));
 			return i;
 		}),
 
 		INDEXED_ABSOLUTE_Y((r, m) -> {
-			final int i = m.read(r.inc()) + (m.read(r.inc()) << 8) + r.getY();
+			final int i = m.read(r.incrementPC()) + (m.read(r.incrementPC()) << 8) + r.getY();
 			r.setPg(AddressingMode.PAGE_CROSSED.test(i, i + r.getY()));
 			return i;
 		}),
 
 		// wraparound zero page
 		INDEXED_INDIRECT((r, m) -> {
-			final int i = m.read(r.inc()) + r.getX();
-			return m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8);
+			final int i = m.read(r.incrementPC()) + r.getX();
+			return m.read(i & ZERO_PAGE_END.getAddress())
+					+ (m.read(AddressingMode.WRAP_AROUND_ZERO_PAGE.apply(i + 1)) << 8);
 		}),
 
 		// wraparound zero page
 		INDIRECT_INDEXED((r, m) -> {
-			int i = m.read(r.inc());
-			i = (m.read(i & 0x00FF) + (m.read(i + 1 & 0x00FF) << 8)) + r.getY();
+			int i = m.read(r.incrementPC());
+			i = (m.read(i & 0x00FF) + (m.read(AddressingMode.WRAP_AROUND_ZERO_PAGE.apply(i + 1)) << 8)) + r.getY();
 			r.setPg(AddressingMode.PAGE_CROSSED.test(i, i + r.getY()));
 			return i;
 		});
@@ -329,6 +384,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		// example: 0xFE00 - 0xFEFF, different page: 0xFE00 - 0xFF00
 		// TODO: JMH >> vs &. (addr1 & 0xFF00) != (addr2 & 0xFF00);
 		private static final BiPredicate<Integer, Integer> PAGE_CROSSED = (x, y) -> (x >> 8 != y >> 8);
+
+		private static final IntFunction<Integer> WRAP_AROUND_ZERO_PAGE = x -> x & ZERO_PAGE_END.getAddress();
 
 		@Override
 		public int applyAsInt(Registers r, Memory m) {
