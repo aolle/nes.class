@@ -521,6 +521,67 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	_CC(0xCC, "CPY nnnn", 3, (var r, var m) -> {
 		cmp(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m), r.getY());
 		return 4;
+	}),
+
+	// increments & decrements
+	_E6(0xE6, "INC nn", 2, (var r, var m) -> {
+		inc(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 5;
+	}),
+
+	_F6(0xF6, "INC nn,X", 2, (var r, var m) -> {
+		inc(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_EE(0xEE, "INC nnnn", 3, (var r, var m) -> {
+		inc(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_FE(0xFE, "INC nnnn,X", 3, (var r, var m) -> {
+		inc(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return 7;
+	}),
+
+	_E8(0xE8, "INX", 1, (var r, var m) -> {
+		inc(r, Registers::setX, r.getX());
+		return 2;
+	}),
+
+	_C8(0xC8, "INY", 1, (var r, var m) -> {
+		inc(r, Registers::setY, r.getY());
+		return 2;
+	}),
+
+	_C6(0xC6, "DEC nn", 2, (var r, var m) -> {
+		dec(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 5;
+	}),
+
+	_D6(0xD6, "DEC nn,X", 2, (var r, var m) -> {
+		dec(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_CE(0xCE, "DEC nnnn", 3, (var r, var m) -> {
+		dec(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_DE(0xDE, "DEC nnnn,X", 3, (var r, var m) -> {
+		dec(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return 7;
+	}),
+
+	_CA(0xCA, "DEX", 1, (var r, var m) -> {
+		dec(r, Registers::setX, r.getX());
+		return 2;
+	}),
+
+	_88(0x88, "DEY", 1, (var r, var m) -> {
+		dec(r, Registers::setY, r.getY());
+		return 2;
 	})
 
 	;
@@ -609,56 +670,56 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	}
 
 	private static void and(final Registers registers, final Memory memory, final int address) {
-		final int value = registers.getA() & memory.read(address);
-		registers.setA(value);
+		final int result = registers.getA() & memory.read(address);
+		registers.setA(result);
 //		Flags.setFlags(registers, value, 'n', 'z');
-		registers.setN(Flags.NEGATIVE.test(value));
-		registers.setZ(Flags.ZERO.test(value));
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
 	}
 
 	private static void xor(final Registers registers, final Memory memory, final int address) {
-		final int value = registers.getA() ^ memory.read(address);
-		registers.setA(value);
+		final int result = registers.getA() ^ memory.read(address);
+		registers.setA(result);
 //		Flags.setFlags(registers, value, 'n', 'z');
-		registers.setN(Flags.NEGATIVE.test(value));
-		registers.setZ(Flags.ZERO.test(value));
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
 	}
 
 	private static void or(final Registers registers, final Memory memory, final int address) {
-		final int value = registers.getA() | memory.read(address);
-		registers.setA(value);
+		final int result = registers.getA() | memory.read(address);
+		registers.setA(result);
 //		Flags.setFlags(registers, value, 'n', 'z');
-		registers.setN(Flags.NEGATIVE.test(value));
-		registers.setZ(Flags.ZERO.test(value));
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
 	}
 
 	private static void test(final Registers registers, final Memory memory, final int address) {
-		final int value = memory.read(address);
+		final int result = memory.read(address);
 //		Flags.setFlags(registers, registers.getA() & value, 'z');
 //		Flags.setFlags(registers, value, 'w', 'n');
-		registers.setN(Flags.NEGATIVE.test(value));
-		registers.setZ(Flags.ZERO.test(registers.getA() & value));
-		registers.setV(Flags.OVERFLOW_BIT.test(value));
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(registers.getA() & result));
+		registers.setV(Flags.OVERFLOW_BIT.test(result));
 	}
 
 	private static void add(final Registers registers, final Memory memory, final int address) {
-		final int value = memory.read(address) + registers.getA() + (registers.isC() ? 1 : 0);
-		registers.setA(value);
+		final int result = memory.read(address) + registers.getA() + (registers.isC() ? 1 : 0);
+		registers.setA(result);
 //		Flags.setFlags(registers, value, 'c', 'z', 'v', 'n');
-		registers.setC(Flags.CARRY.test(value));
-		registers.setZ(Flags.ZERO.test(value));
-		registers.setV(Flags.OVERFLOW.test(value));
-		registers.setN(Flags.NEGATIVE.test(value));
+		registers.setC(Flags.CARRY.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+		registers.setV(Flags.OVERFLOW.test(result));
+		registers.setN(Flags.NEGATIVE.test(result));
 	}
 
 	private static void sub(final Registers registers, final Memory memory, final int address) {
-		final int value = registers.getA() - memory.read(address) - (!registers.isC() ? 1 : 0);
-		registers.setA(value);
+		final int result = registers.getA() - memory.read(address) - (!registers.isC() ? 1 : 0);
+		registers.setA(result);
 //		Flags.setFlags(registers, value, 'k', 'z', 'v', 'n');
-		registers.setZ(Flags.ZERO.test(value));
-		registers.setV(Flags.OVERFLOW.test(value));
-		registers.setN(Flags.NEGATIVE.test(value));
-		registers.setC(!Flags.CARRY.test(value));
+		registers.setZ(Flags.ZERO.test(result));
+		registers.setV(Flags.OVERFLOW.test(result));
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setC(!Flags.CARRY.test(result));
 	}
 
 	private static void cmp(final Registers registers, final Memory memory, final int address, final int value) {
@@ -667,9 +728,37 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		if (result >= 0) {
 			registers.setC(true);
 		}
-		if (result == 0) {
-			registers.setZ(true);
-		}
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void inc(final Registers registers, final Memory memory, final int address) {
+		final int result = (memory.read(address) + 1) & 0x00FF;
+		memory.write(address, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void inc(final Registers registers, final BiConsumer<Registers, Integer> destination,
+			final int value) {
+		final int result = (value + 1) & 0x00FF;
+		destination.accept(registers, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void dec(final Registers registers, final Memory memory, final int address) {
+		final int result = (memory.read(address) - 1) & 0x00FF;
+		memory.write(address, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void dec(final Registers registers, final BiConsumer<Registers, Integer> destination,
+			final int value) {
+		final int result = (value - 1) & 0x00FF;
+		destination.accept(registers, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
 	}
 
 	private static class Flags {
@@ -680,7 +769,7 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		private static final IntPredicate OVERFLOW_BIT = x -> ((x & 0x0040) != 0);
 		// +127 (0x007F) (01111111) <=> -128 (0x0080) (10000000)
 		private static final IntPredicate OVERFLOW = x -> (x > 0x007F || x < 0x0080);
-// overflow in bit 7
+		// overflow in bit 7
 		private static final IntPredicate CARRY = x -> (x >> 8 != 0);
 
 //		public static final void setFlags(final Registers registers, final int value, char... flags) {
