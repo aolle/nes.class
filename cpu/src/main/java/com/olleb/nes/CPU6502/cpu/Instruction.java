@@ -582,7 +582,108 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	_88(0x88, "DEY", 1, (var r, var m) -> {
 		dec(r, Registers::setY, r.getY());
 		return 2;
-	})
+	}),
+
+	// shifts
+	_0A(0x0A, "ASL A", 1, (var r, var m) -> {
+		asl(r);
+		return 2;
+	}),
+
+	_06(0x06, "ASL nn", 2, (var r, var m) -> {
+		asl(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 5;
+	}),
+
+	_16(0x16, "ASL nn,X", 2, (var r, var m) -> {
+		asl(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_0E(0x0E, "ASL nnnn", 3, (var r, var m) -> {
+		asl(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_1E(0x1E, "ASL nnnn,X", 3, (var r, var m) -> {
+		asl(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return 7;
+	}),
+
+	_4A(0x4A, "LSR A", 1, (var r, var m) -> {
+		lsr(r);
+		return 2;
+	}),
+
+	_46(0x46, "LSR nn", 2, (var r, var m) -> {
+		lsr(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 5;
+	}),
+
+	_56(0x56, "LSR nn,X", 2, (var r, var m) -> {
+		lsr(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_4E(0x4E, "LSR nnnn", 3, (var r, var m) -> {
+		lsr(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_5E(0x5E, "LSR nnnn,X", 3, (var r, var m) -> {
+		lsr(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return 7;
+	}),
+
+	_6A(0x6A, "ROR A", 1, (var r, var m) -> {
+		ror(r);
+		return 2;
+	}),
+
+	_66(0x66, "ROR nn", 2, (var r, var m) -> {
+		ror(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 5;
+	}),
+
+	_76(0x76, "ROR nn,X", 2, (var r, var m) -> {
+		ror(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_6E(0x6E, "ROR nnnn", 3, (var r, var m) -> {
+		ror(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_7E(0x7E, "ROR nnnn,X", 3, (var r, var m) -> {
+		ror(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return 7;
+	}),
+
+	_2A(0x2A, "ROL A", 1, (var r, var m) -> {
+		rol(r);
+		return 2;
+	}),
+
+	_26(0x26, "ROL nn", 2, (var r, var m) -> {
+		rol(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
+		return 5;
+	}),
+
+	_36(0x36, "ROL nn,X", 2, (var r, var m) -> {
+		ror(r, m, AddressingMode.INDEXED_ZERO_PAGE_X.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_2E(0x2E, "ROL nnnn", 3, (var r, var m) -> {
+		rol(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 6;
+	}),
+
+	_3E(0x3E, "ROL nnnn,X", 3, (var r, var m) -> {
+		rol(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
+		return 7;
+	}),
 
 	;
 
@@ -653,7 +754,6 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	private static void stackPointerTransfer(final Registers registers, final int value,
 			final BiConsumer<Registers, Integer> destination) {
 		destination.accept(registers, value);
-//		Flags.setFlags(registers, value, 'n', 'z');
 		registers.setN(Flags.NEGATIVE.test(value));
 		registers.setZ(Flags.ZERO.test(value));
 	}
@@ -672,7 +772,6 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	private static void and(final Registers registers, final Memory memory, final int address) {
 		final int result = registers.getA() & memory.read(address);
 		registers.setA(result);
-//		Flags.setFlags(registers, value, 'n', 'z');
 		registers.setN(Flags.NEGATIVE.test(result));
 		registers.setZ(Flags.ZERO.test(result));
 	}
@@ -680,7 +779,6 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	private static void xor(final Registers registers, final Memory memory, final int address) {
 		final int result = registers.getA() ^ memory.read(address);
 		registers.setA(result);
-//		Flags.setFlags(registers, value, 'n', 'z');
 		registers.setN(Flags.NEGATIVE.test(result));
 		registers.setZ(Flags.ZERO.test(result));
 	}
@@ -688,15 +786,12 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	private static void or(final Registers registers, final Memory memory, final int address) {
 		final int result = registers.getA() | memory.read(address);
 		registers.setA(result);
-//		Flags.setFlags(registers, value, 'n', 'z');
 		registers.setN(Flags.NEGATIVE.test(result));
 		registers.setZ(Flags.ZERO.test(result));
 	}
 
 	private static void test(final Registers registers, final Memory memory, final int address) {
 		final int result = memory.read(address);
-//		Flags.setFlags(registers, registers.getA() & value, 'z');
-//		Flags.setFlags(registers, value, 'w', 'n');
 		registers.setN(Flags.NEGATIVE.test(result));
 		registers.setZ(Flags.ZERO.test(registers.getA() & result));
 		registers.setV(Flags.OVERFLOW_BIT.test(result));
@@ -705,7 +800,6 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	private static void add(final Registers registers, final Memory memory, final int address) {
 		final int result = memory.read(address) + registers.getA() + (registers.isC() ? 1 : 0);
 		registers.setA(result);
-//		Flags.setFlags(registers, value, 'c', 'z', 'v', 'n');
 		registers.setC(Flags.CARRY.test(result));
 		registers.setZ(Flags.ZERO.test(result));
 		registers.setV(Flags.OVERFLOW.test(result));
@@ -731,6 +825,9 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		registers.setZ(Flags.ZERO.test(result));
 	}
 
+	// unsigned integer => wrap around to 255/$FF
+	// signed integer => wrap around to +127/$7F
+
 	private static void inc(final Registers registers, final Memory memory, final int address) {
 		final int result = (memory.read(address) + 1) & 0x00FF;
 		memory.write(address, result);
@@ -746,6 +843,7 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		registers.setZ(Flags.ZERO.test(result));
 	}
 
+	// TODO refactor
 	private static void dec(final Registers registers, final Memory memory, final int address) {
 		final int result = (memory.read(address) - 1) & 0x00FF;
 		memory.write(address, result);
@@ -761,6 +859,90 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		registers.setZ(Flags.ZERO.test(result));
 	}
 
+	// TODO refactor
+	private static void asl(final Registers registers) {
+		int result = registers.getA();
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 7));
+		result = (result << 1) & 0x00FF;
+		registers.setA(result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void asl(final Registers registers, final Memory memory, final int address) {
+		int result = memory.read(address);
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 7));
+		result = (result << 1) & 0x00FF;
+		memory.write(address, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	// TODO refactor
+	private static void lsr(final Registers registers) {
+		int result = registers.getA();
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 0));
+		result >>= 1;
+		registers.setA(result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void lsr(final Registers registers, final Memory memory, final int address) {
+		int result = memory.read(address);
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 0));
+		result >>= 1;
+		memory.write(address, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	// TODO refactor
+	private static void ror(final Registers registers) {
+		int result = registers.getA();
+		if (registers.isC())
+			result |= 0x0100;
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 0));
+		result >>= 1;
+		registers.setA(result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void ror(final Registers registers, final Memory memory, final int address) {
+		int result = memory.read(address);
+		if (registers.isC())
+			result |= 0x0100;
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 0));
+		result >>= 1;
+		memory.write(address, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	// TODO refactor
+	private static void rol(final Registers registers) {
+		int result = registers.getA() << 1;
+		if (registers.isC())
+			result |= 0x0001;
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 7));
+		result &= 0x00FF;
+		registers.setA(result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void rol(final Registers registers, final Memory memory, final int address) {
+		int result = memory.read(address) << 1;
+		if (registers.isC())
+			result |= 0x0001;
+		registers.setC(Flags.CARRY_BY_BIT.test(result, 7));
+		result &= 0x00FF;
+		memory.write(address, result);
+		registers.setN(Flags.NEGATIVE.test(result));
+		registers.setZ(Flags.ZERO.test(result));
+	}
+
 	private static class Flags {
 		private static final IntPredicate ZERO = x -> (x == 0);
 		// MSB 2^7 = 0x0080
@@ -771,6 +953,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		private static final IntPredicate OVERFLOW = x -> (x > 0x007F || x < 0x0080);
 		// overflow in bit 7
 		private static final IntPredicate CARRY = x -> (x >> 8 != 0);
+		// contents of bit y
+		private static final BiPredicate<Integer, Integer> CARRY_BY_BIT = (x, y) -> (((x >> y) & 1) != 0);
 
 //		public static final void setFlags(final Registers registers, final int value, char... flags) {
 //			for (char c : flags) {

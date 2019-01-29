@@ -4,6 +4,7 @@ NES / Famicom emulator
 -Project in development-
 
 ## Resources  
+* [6502 Microprocessor](http://nesdev.com/6502.txt)  
 * [AtariAge](http://atariage.com)  
 * [C64-Wiki](https://www.c64-wiki.com)  
 * [Obelisk](http://www.obelisk.me.uk/)  
