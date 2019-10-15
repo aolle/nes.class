@@ -29,6 +29,11 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.olleb.nes.CPU6502.cpu.Instruction;
 
+/**
+ * 6502 LOAD Instructions test. 
+ * No CPU involved. 
+ *
+ */
 @DisplayName("Load Instructions Test. No CPU.")
 @TestInstance(Lifecycle.PER_CLASS)
 class LoadInstructionsNoCPUTest extends InstructionsTestBase {

@@ -24,6 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 import com.olleb.nes.CPU6502.cpu.Registers;
 import com.olleb.nes.CPU6502.mem.RAMTestBase;
 
+/***
+ * Base Template for Instruction tests.
+ *
+ */
 public abstract class InstructionsTestBase extends RAMTestBase {
 
 	protected Registers registers;

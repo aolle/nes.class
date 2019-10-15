@@ -19,6 +19,10 @@
 
 package com.olleb.nes.CPU6502.cpu;
 
+/**
+ * 6502 CPU Registers.
+ *
+ */
 public final class Registers {
 
 	/**
@@ -56,6 +60,24 @@ public final class Registers {
 	// page crossed
 	private boolean pg;
 
+	public int getProcessorStatus() {
+		int r = 0;
+		for (boolean b : new boolean[] { c, z, i, d, b, v, n }) {
+			r = (r << 1) + (b ? 1 : 0);
+		}
+		return r;
+	}
+	
+	public void setProcessorStatus(final int status) {
+		c = ((status >> 6) & 1) == 1 ? true : false;
+		z = ((status >> 5) & 1) == 1 ? true : false;
+		i = ((status >> 4) & 1) == 1 ? true : false;
+		d = ((status >> 3) & 1) == 1 ? true : false;
+		b = ((status >> 2) & 1) == 1 ? true : false;
+		v = ((status >> 1) & 1) == 1 ? true : false;
+		n = ((status >> 0) & 1) == 1 ? true : false;
+	}
+	
 	public int getPC() {
 		return pc;
 	}
@@ -181,23 +203,5 @@ public final class Registers {
 	public void setPg(boolean pg) {
 		this.pg = pg;
 	}
-	
-	public int getProcessorStatus() {
-		int r = 0;
-		for (boolean b : new boolean[] { c, z, i, d, b, v, n }) {
-			r = (r << 1) + (b ? 1 : 0);
-		}
-		return r;
-	}
-	
-	public void setProcessorStatus(final int status) {
-		c = ((status >> 6) & 1) == 1 ? true : false;
-		z = ((status >> 5) & 1) == 1 ? true : false;
-		i = ((status >> 4) & 1) == 1 ? true : false;
-		d = ((status >> 3) & 1) == 1 ? true : false;
-		b = ((status >> 2) & 1) == 1 ? true : false;
-		v = ((status >> 1) & 1) == 1 ? true : false;
-		n = ((status >> 0) & 1) == 1 ? true : false;
-	}
-	
+		
 }

@@ -21,6 +21,10 @@ package com.olleb.nes.CPU6502.mem;
 
 import java.util.Arrays;
 
+/***
+ * 6502 RAM Memory.
+ *
+ */
 public final class RAM implements Memory {
 
 	// Zero page: 0x0000 - 0x00FF

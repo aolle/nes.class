@@ -24,6 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 
 import com.olleb.nes.CPU6502.mem.RAM;
 
+/***
+ * Base Template for RAM tests.
+ *
+ */
 public abstract class RAMTestBase {
 	
 	protected RAM ram;

@@ -26,6 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
+/**
+ * 6502 STACK Instructions test. 
+ * No CPU involved. 
+ *
+ */
 @DisplayName("Stack Instructions Test. No CPU.")
 @TestInstance(Lifecycle.PER_CLASS)
 class StackInstructionsNoCPUTest extends InstructionsTestBase {
