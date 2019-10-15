@@ -60,9 +60,11 @@ public final class RAM implements Memory {
 
 	@Override
 	public int read(final int address) {
-		if (address <= Address.MIRROR_END.value) {
+		if(address > Address.TOTAL_END.value) {
+			return -1;
+		}else if (address <= Address.MIRROR_END.value) {
 			return mem[address & Address.END.value];
-		}
+		} 
 		return mem[address];
 	}
 
