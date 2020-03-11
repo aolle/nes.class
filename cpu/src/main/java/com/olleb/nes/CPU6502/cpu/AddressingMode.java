@@ -71,7 +71,14 @@ public enum AddressingMode implements ToIntBiFunction<Registers, Memory> {
 		i = (m.read(i & 0x00FF) + (m.read(AddressingMode.WRAP_AROUND_ZERO_PAGE.apply(i + 1)) << 8)) + r.getY();
 		r.setPg(AddressingMode.PAGE_CROSSED.test(i, i + r.getY()));
 		return i;
-	});
+	}),
+
+	INDIRECT((r, m) -> {
+		final int i = AddressingMode.ABSOLUTE.applyAsInt(r, m);
+		return m.read(i) + (m.read(i + 1) << 8);
+	}),
+
+	;
 
 	private final ToIntBiFunction<Registers, Memory> toIntBiFunction;
 

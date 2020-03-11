@@ -30,11 +30,12 @@ import com.olleb.nes.CPU6502.mem.RAM.Address;
 /**
  * The 151 valid 6502 opcodes.
  * 
- * Dynamic instruction behavior with strategy pattern. 
+ * Dynamic instruction behavior with strategy pattern.
  *
  */
 public enum Instruction implements InstructionStrategy<Memory> {
-	// load
+	/** LOAD **/
+	// LDA - https://www.c64-wiki.com/wiki/LDA
 	_A9(0xA9, "LDA #nn", 2, (var r, var m) -> {
 		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setA);
 		return 2;
@@ -75,6 +76,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return r.isPg() ? 6 : 5;
 	}),
 
+	// LDX - https://www.c64-wiki.com/wiki/LDX
+
 	_A2(0xA2, "LDX #nn", 2, (var r, var m) -> {
 		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setX);
 		return 2;
@@ -99,6 +102,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		load(r, m, AddressingMode.INDEXED_ABSOLUTE_Y.applyAsInt(r, m), Registers::setX);
 		return r.isPg() ? 5 : 4;
 	}),
+
+	// LDY - https://www.c64-wiki.com/wiki/LDY
 
 	_A0(0xA0, "LDY #nn", 2, (var r, var m) -> {
 		load(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), Registers::setY);
@@ -125,7 +130,9 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return r.isPg() ? 5 : 4;
 	}),
 
-	// store
+	/** STORE **/
+	// STA - https://www.c64-wiki.com/wiki/STA
+
 	_85(0x85, "STA nn", 2, (var r, var m) -> {
 		store(m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), r.getA());
 		return 3;
@@ -161,6 +168,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 6;
 	}),
 
+	// STX - https://www.c64-wiki.com/wiki/STX
+
 	_86(0x86, "STX nn", 2, (var r, var m) -> {
 		store(m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), r.getX());
 		return 3;
@@ -175,6 +184,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		store(m, AddressingMode.ABSOLUTE.applyAsInt(r, m), r.getX());
 		return 4;
 	}),
+
+	// STY - https://www.c64-wiki.com/wiki/STY
 
 	_84(0x84, "STY nn", 2, (var r, var m) -> {
 		store(m, AddressingMode.ZERO_PAGE.applyAsInt(r, m), r.getY());
@@ -191,59 +202,81 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 4;
 	}),
 
-	// register transfers
+	/** REGISTER TRANSFERS **/
+	// TAX - https://www.c64-wiki.com/wiki/TAX
+
 	_AA(0xAA, "TAX", 1, (var r, var m) -> {
 		transfer(r, r.getA(), Registers::setX);
 		return 2;
 	}),
+
+	// TAY - https://www.c64-wiki.com/wiki/TAY
 
 	_A8(0xA8, "TAY", 1, (var r, var m) -> {
 		transfer(r, r.getA(), Registers::setY);
 		return 2;
 	}),
 
+	// TXA - https://www.c64-wiki.com/wiki/TXA
+
 	_8A(0x8A, "TXA", 1, (var r, var m) -> {
 		transfer(r, r.getX(), Registers::setA);
 		return 2;
 	}),
+
+	// TYA - https://www.c64-wiki.com/wiki/TYA
 
 	_98(0x98, "TYA", 1, (var r, var m) -> {
 		transfer(r, r.getY(), Registers::setA);
 		return 2;
 	}),
 
-	// stack
+	/** STACK **/
+	// TSX - https://www.c64-wiki.com/wiki/TSX
+
 	_BA(0xBA, "TSX", 1, (var r, var m) -> {
 		stackPointerTransfer(r, r.getSP(), Registers::setX);
 		return 2;
 	}),
+
+	// TXS - https://www.c64-wiki.com/wiki/TXS
 
 	_9A(0x9A, "TXS", 1, (var r, var m) -> {
 		stackPointerTransfer(r, r.getX(), Registers::setSP);
 		return 2;
 	}),
 
+	// PHA - https://www.c64-wiki.com/wiki/PHA
+
 	_48(0x48, "PHA", 1, (var r, var m) -> {
 		stackPush(r, m, r.getA());
 		return 3;
 	}),
+
+	// PHP - https://www.c64-wiki.com/wiki/PHP
 
 	_08(0x08, "PHP", 1, (var r, var m) -> {
 		stackPush(r, m, r.getProcessorStatus());
 		return 3;
 	}),
 
+	// PLA - https://www.c64-wiki.com/wiki/PLA_(command)
+
 	_68(0x68, "PLA", 1, (var r, var m) -> {
 		r.setA(stackPull(r, m));
 		return 4;
 	}),
+
+	// PLP - https://www.c64-wiki.com/wiki/PLP
 
 	_28(0x28, "PLP", 1, (var r, var m) -> {
 		r.setProcessorStatus(stackPull(r, m));
 		return 4;
 	}),
 
-	// logical
+	/** LOGICAL **/
+	// AND - https://www.c64-wiki.com/wiki/AND_(assembler)
+
 	_29(0x29, "AND #nn", 2, (var r, var m) -> {
 		and(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
 		return 2;
@@ -283,6 +316,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		and(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
 		return r.isPg() ? 6 : 5;
 	}),
+
+	// EOR - https://www.c64-wiki.com/wiki/EOR
 
 	_49(0x49, "EOR #nn", 2, (var r, var m) -> {
 		xor(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
@@ -324,6 +359,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return r.isPg() ? 6 : 5;
 	}),
 
+	// ORA - https://www.c64-wiki.com/wiki/ORA
+
 	_09(0x09, "ORA #nn", 2, (var r, var m) -> {
 		or(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
 		return 2;
@@ -364,6 +401,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return r.isPg() ? 6 : 5;
 	}),
 
+	// BIT - https://www.c64-wiki.com/wiki/BIT_(assembler)
+
 	_24(0x24, "BIT nn", 2, (var r, var m) -> {
 		test(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
 		return 3;
@@ -374,7 +413,9 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 4;
 	}),
 
-	// arithmetic
+	/** ARITHMETIC **/
+	// ADC - https://www.c64-wiki.com/wiki/ADC
+
 	_69(0x69, "ADC #nn", 2, (var r, var m) -> {
 		add(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
 		return 2;
@@ -414,6 +455,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		add(r, m, AddressingMode.INDIRECT_INDEXED.applyAsInt(r, m));
 		return r.isPg() ? 6 : 5;
 	}),
+
+	// SBC - https://www.c64-wiki.com/wiki/SBC
 
 	_E9(0xE9, "SBC #nn", 2, (var r, var m) -> {
 		sub(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m));
@@ -455,6 +498,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return r.isPg() ? 6 : 5;
 	}),
 
+	// CMP - https://www.c64-wiki.com/wiki/CMP
+
 	_C9(0xC9, "CMP #nn", 2, (var r, var m) -> {
 		cmp(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), r.getA());
 		return 2;
@@ -495,6 +540,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return r.isPg() ? 6 : 5;
 	}),
 
+	// CPX - https://www.c64-wiki.com/wiki/CPX
+
 	_E0(0xE0, "CPX #nn", 2, (var r, var m) -> {
 		cmp(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), r.getX());
 		return 2;
@@ -509,6 +556,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		cmp(r, m, AddressingMode.ABSOLUTE.applyAsInt(r, m), r.getX());
 		return 4;
 	}),
+
+	// CPY - https://www.c64-wiki.com/wiki/CPY
 
 	_C0(0xC0, "CPY #nn", 2, (var r, var m) -> {
 		cmp(r, m, AddressingMode.IMMEDIATE.applyAsInt(r, m), r.getY());
@@ -525,7 +574,9 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 4;
 	}),
 
-	// increments & decrements
+	/** INCREMENTS & DECREMENTS **/
+	// INC - https://www.c64-wiki.com/wiki/INC
+
 	_E6(0xE6, "INC nn", 2, (var r, var m) -> {
 		inc(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
 		return 5;
@@ -546,15 +597,21 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 7;
 	}),
 
+	// INX - https://www.c64-wiki.com/wiki/INX
+
 	_E8(0xE8, "INX", 1, (var r, var m) -> {
 		inc(r, Registers::setX, r.getX());
 		return 2;
 	}),
 
+	// INY - https://www.c64-wiki.com/wiki/INY
+
 	_C8(0xC8, "INY", 1, (var r, var m) -> {
 		inc(r, Registers::setY, r.getY());
 		return 2;
 	}),
+
+	// DEC - https://www.c64-wiki.com/wiki/DEC
 
 	_C6(0xC6, "DEC nn", 2, (var r, var m) -> {
 		dec(r, m, AddressingMode.ZERO_PAGE.applyAsInt(r, m));
@@ -576,17 +633,23 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 7;
 	}),
 
+	// DEX - https://www.c64-wiki.com/wiki/DEX
+
 	_CA(0xCA, "DEX", 1, (var r, var m) -> {
 		dec(r, Registers::setX, r.getX());
 		return 2;
 	}),
+
+	// DEY - https://www.c64-wiki.com/wiki/DEY
 
 	_88(0x88, "DEY", 1, (var r, var m) -> {
 		dec(r, Registers::setY, r.getY());
 		return 2;
 	}),
 
-	// shifts
+	/** SHIFTS **/
+	// ASL - https://www.c64-wiki.com/wiki/ASL
+
 	_0A(0x0A, "ASL A", 1, (var r, var m) -> {
 		asl(r);
 		return 2;
@@ -611,6 +674,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		asl(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
 		return 7;
 	}),
+
+	// LSR - https://www.c64-wiki.com/wiki/LSR
 
 	_4A(0x4A, "LSR A", 1, (var r, var m) -> {
 		lsr(r);
@@ -637,6 +702,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 7;
 	}),
 
+	// ROR - https://www.c64-wiki.com/wiki/ROR
+
 	_6A(0x6A, "ROR A", 1, (var r, var m) -> {
 		ror(r);
 		return 2;
@@ -662,6 +729,8 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 7;
 	}),
 
+	// ROL - https://www.c64-wiki.com/wiki/ROL
+
 	_2A(0x2A, "ROL A", 1, (var r, var m) -> {
 		rol(r);
 		return 2;
@@ -685,6 +754,19 @@ public enum Instruction implements InstructionStrategy<Memory> {
 	_3E(0x3E, "ROL nnnn,X", 3, (var r, var m) -> {
 		rol(r, m, AddressingMode.INDEXED_ABSOLUTE_X.applyAsInt(r, m));
 		return 7;
+	}),
+
+	/** JUMPS & CALLS ***/
+	// JMP - https://www.c64-wiki.com/wiki/JMP
+
+	_4C(0x4C, "JMP nnnn", 3, (var r, var m) -> {
+		jmp(r, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 3;
+	}),
+
+	_6C(0x6C, "JMP (nnnn)", 3, (var r, var m) -> {
+		jmp(r, AddressingMode.INDIRECT.applyAsInt(r, m));
+		return 5;
 	}),
 
 	;
@@ -943,6 +1025,10 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		memory.write(address, result);
 		registers.setN(Flags.NEGATIVE.test(result));
 		registers.setZ(Flags.ZERO.test(result));
+	}
+
+	private static void jmp(final Registers registers, final int address) {
+		registers.setPC(address);
 	}
 
 	private static class Flags {
