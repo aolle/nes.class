@@ -769,6 +769,13 @@ public enum Instruction implements InstructionStrategy<Memory> {
 		return 5;
 	}),
 
+	// JSR - https://www.c64-wiki.com/wiki/JSR
+
+	_20(0x20, "JSR nnnn", 3, (var r, var m) -> {
+		jsr(r, AddressingMode.ABSOLUTE.applyAsInt(r, m));
+		return 6;
+	}),
+
 	;
 
 	private static final Instruction[] instructions = new Instruction[256];
@@ -1029,6 +1036,10 @@ public enum Instruction implements InstructionStrategy<Memory> {
 
 	private static void jmp(final Registers registers, final int address) {
 		registers.setPC(address);
+	}
+
+	private static void jsr(final Registers registers, final int address) {
+
 	}
 
 	private static class Flags {

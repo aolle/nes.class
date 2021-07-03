@@ -84,5 +84,9 @@ public final class RAM implements Memory {
 	public void clear() {
 		Arrays.fill(mem, 0x0);
 	}
+	
+	public void push() {
+		
+	}
 
 }

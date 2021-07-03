@@ -19,6 +19,8 @@
 
 package com.olleb.nes.CPU6502.cpu;
 
+import com.olleb.nes.CPU6502.mem.RAM;
+
 /**
  * 6502 CPU Registers.
  *
@@ -34,7 +36,7 @@ public final class Registers {
 	 * y -> index register Y
 	 */
 	private int pc;
-	private int sp;
+	private int sp = RAM.Address.STACK_END.getAddress(); // descending stack
 	private int a;
 	private int x;
 	private int y;
